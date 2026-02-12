@@ -1,0 +1,438 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* ═══════════════════════════════════════════════
+     Light Theme — GovPreços
+     Government document aesthetic. Warm paper
+     white, deep navy ink, blue + amber accents.
+     ═══════════════════════════════════════════════ */
+
+  /* Base surfaces */
+  --background: 218 28% 96%;       /* warm slightly-cool off-white */
+  --foreground: 222 42% 12%;       /* deep navy ink                */
+
+  /* Cards & popovers */
+  --card: 0 0% 100%;               /* pure white cards             */
+  --card-foreground: 222 42% 12%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 42% 12%;
+
+  /* Primary — deeper blue for contrast on white */
+  --primary: 217 80% 46%;          /* #1A6BD0 — AA contrast        */
+  --primary-foreground: 0 0% 100%;
+
+  /* Secondary — very light cool-gray */
+  --secondary: 218 20% 92%;
+  --secondary-foreground: 222 35% 20%;
+
+  /* Muted */
+  --muted: 218 18% 93%;
+  --muted-foreground: 220 14% 46%;
+
+  /* Accent — deeper amber for contrast on white */
+  --accent: 38 80% 44%;            /* #C98A18 deep amber           */
+  --accent-foreground: 30 80% 8%;
+
+  /* Destructive */
+  --destructive: 0 70% 50%;
+  --destructive-foreground: 0 0% 100%;
+
+  /* Borders & inputs */
+  --border: 218 20% 87%;
+  --input: 218 20% 87%;
+  --ring: 217 80% 46%;
+
+  /* Radius */
+  --radius: 0.5rem;
+
+  /* Chart palette */
+  --chart-1: 217 80% 46%;          /* blue                         */
+  --chart-2: 38 80% 44%;           /* amber                        */
+  --chart-3: 142 58% 36%;          /* green                        */
+  --chart-4: 280 52% 50%;          /* violet                       */
+  --chart-5: 200 68% 42%;          /* cyan                         */
+
+  /* Sidebar — stays dark in light mode (authority + contrast) */
+  --sidebar: 222 42% 15%;
+  --sidebar-foreground: 220 18% 82%;
+  --sidebar-primary: 217 100% 65%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 38 82% 52%;
+  --sidebar-accent-foreground: 30 80% 8%;
+  --sidebar-border: 222 38% 22%;
+  --sidebar-ring: 217 100% 65%;
+
+  /* Dark sidebar tokens */
+  --sidebar-dark: 222 42% 15%;
+  --sidebar-dark-foreground: 220 18% 82%;
+  --sidebar-dark-muted: 220 15% 48%;
+  --sidebar-dark-border: 222 38% 22%;
+  --sidebar-dark-hover: 222 38% 22%;
+  --sidebar-dark-active: 217 100% 65%;
+
+  /* Semantic colors */
+  --success: 142 58% 34%;
+  --success-foreground: 0 0% 100%;
+  --warning: 38 80% 44%;
+  --warning-foreground: 0 0% 100%;
+  --info: 217 80% 46%;
+  --info-foreground: 0 0% 100%;
+}
+
+/* ── Dark theme ──────────────────────────────────── */
+.dark {
+  /* ═══════════════════════════════════════════════
+     Dark Intelligence Theme — GovPreços
+     Deep navy + amber accent. Precision. Authority.
+     ═══════════════════════════════════════════════ */
+
+  --background: 222 50% 5%;        /* #070C19 near-black navy */
+  --foreground: 220 20% 88%;       /* #D8DDF0 soft off-white  */
+  --card: 222 48% 8%;              /* #0C1424 dark card       */
+  --card-foreground: 220 20% 88%;
+  --popover: 222 50% 7%;
+  --popover-foreground: 220 20% 88%;
+  --primary: 217 100% 65%;         /* #4D8EFF                 */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 222 35% 14%;
+  --secondary-foreground: 220 20% 80%;
+  --muted: 222 42% 11%;
+  --muted-foreground: 220 15% 50%;
+  --accent: 38 82% 52%;            /* #F0A625 amber           */
+  --accent-foreground: 30 80% 8%;
+  --destructive: 0 72% 58%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 222 38% 14%;
+  --input: 222 38% 14%;
+  --ring: 217 100% 65%;
+  --chart-1: 217 100% 65%;
+  --chart-2: 38 82% 52%;
+  --chart-3: 142 65% 42%;
+  --chart-4: 280 60% 60%;
+  --chart-5: 200 75% 52%;
+  --sidebar: 222 55% 3%;
+  --sidebar-foreground: 220 20% 80%;
+  --sidebar-primary: 217 100% 65%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 38 82% 52%;
+  --sidebar-accent-foreground: 30 80% 8%;
+  --sidebar-border: 222 42% 10%;
+  --sidebar-ring: 217 100% 65%;
+  --sidebar-dark: 222 55% 3%;
+  --sidebar-dark-foreground: 220 20% 78%;
+  --sidebar-dark-muted: 220 15% 40%;
+  --sidebar-dark-border: 222 42% 10%;
+  --sidebar-dark-hover: 222 45% 10%;
+  --sidebar-dark-active: 217 100% 65%;
+  --success: 142 65% 40%;
+  --success-foreground: 0 0% 100%;
+  --warning: 38 82% 52%;
+  --warning-foreground: 0 0% 100%;
+  --info: 217 100% 65%;
+  --info-foreground: 0 0% 100%;
+}
+
+@theme {
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+
+  --color-info: hsl(var(--info));
+  --color-info-foreground: hsl(var(--info-foreground));
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+
+  @keyframes accordion-down {
+    from { height: 0; }
+    to { height: var(--radix-accordion-content-height); }
+  }
+  @keyframes accordion-up {
+    from { height: var(--radix-accordion-content-height); }
+    to { height: 0; }
+  }
+}
+
+@utility container {
+  margin-inline: auto;
+  padding-inline: 2rem;
+
+  @media (width >=--theme(--breakpoint-sm)) {
+    max-width: none;
+  }
+
+  @media (width >=1400px) {
+    max-width: 1400px;
+  }
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-info: hsl(var(--info));
+  --color-info-foreground: hsl(var(--info-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+  --color-sidebar: hsl(var(--sidebar));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-dark: hsl(var(--sidebar-dark));
+  --color-sidebar-dark-foreground: hsl(var(--sidebar-dark-foreground));
+  --color-sidebar-dark-muted: hsl(var(--sidebar-dark-muted));
+  --color-sidebar-dark-border: hsl(var(--sidebar-dark-border));
+  --color-sidebar-dark-hover: hsl(var(--sidebar-dark-hover));
+  --color-sidebar-dark-active: hsl(var(--sidebar-dark-active));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-feature-settings: 'kern', 'liga', 'clig';
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* ── Entry animations ───────────────────────────────── */
+@keyframes dash-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-dash-in {
+  animation: dash-fade-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ── Font utilities ─────────────────────────────────── */
+
+/*
+  Source Serif 4 — Adobe's professional document serif.
+  Has optical sizing (opsz axis): letterforms auto-adapt at large
+  display sizes vs. small UI sizes. Authoritative without being stiff.
+  Used for: page headings, section titles, KPI numbers.
+*/
+.font-display {
+  font-family: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  font-optical-sizing: auto;
+}
+
+/*
+  Source Code Pro — Part of the Source superfamily.
+  Designed to pair with Source Serif 4 and Source Sans 3.
+  Used for: process numbers, dates, legal references, codes.
+*/
+.font-mono {
+  font-family: 'Source Code Pro', 'Fira Code', 'Courier New', monospace;
+}
+
+/* ── Sidebar active item ────────────────────────────── */
+.sidebar-item-active {
+  background: hsl(var(--primary) / 0.12);
+  color: hsl(var(--primary));
+  box-shadow: inset 3px 0 0 hsl(var(--primary));
+}
+
+/* ── Semantic color aliases for theme-aware usage ────── */
+/* "info" blue box (audit notices, legal warnings) */
+:root {
+  --info-box-bg: hsl(214 60% 96%);
+  --info-box-border: hsl(214 40% 82%);
+  --info-box-text: hsl(217 60% 32%);
+
+  /* Warning/orange box (excluded sources, outliers) */
+  --warning-box-bg: hsl(36 70% 96%);
+  --warning-box-border: hsl(36 60% 76%);
+  --warning-box-text: hsl(30 60% 32%);
+
+  /* Accent highlight color (selection count, active badge) */
+  --accent-highlight: hsl(38 80% 44%);
+  --accent-highlight-fg: hsl(30 80% 8%);
+
+  /* Floating action bar */
+  --fab-bg: hsl(220 25% 98% / 0.94);
+  --fab-ring: hsl(38 60% 75%);
+  --fab-glow: hsl(38 80% 44%);
+
+  /* Context banner */
+  --banner-bg: linear-gradient(135deg, hsl(218 35% 94%) 0%, hsl(36 50% 96%) 100%);
+  --banner-ring: hsl(38 50% 78%);
+  --banner-icon-bg: hsl(38 60% 88%);
+  --banner-icon-text: hsl(30 70% 32%);
+  --banner-label: hsl(30 50% 42%);
+
+  /* Price classification */
+  --price-valid: hsl(142 58% 34%);
+  --price-warning: hsl(38 80% 38%);
+  --price-danger: hsl(0 70% 46%);
+}
+
+.dark {
+  --info-box-bg: hsl(217 55% 10%);
+  --info-box-border: hsl(217 45% 22%);
+  --info-box-text: hsl(214 70% 72%);
+
+  --warning-box-bg: hsl(30 60% 8%);
+  --warning-box-border: hsl(36 55% 28%);
+  --warning-box-text: hsl(36 70% 58%);
+
+  --accent-highlight: hsl(38 82% 52%);
+  --accent-highlight-fg: hsl(30 80% 8%);
+
+  --fab-bg: hsl(222 50% 5% / 0.92);
+  --fab-ring: hsl(38 82% 52% / 0.3);
+  --fab-glow: hsl(38 82% 52%);
+
+  --banner-bg: linear-gradient(135deg, hsl(222 70% 8%) 0%, hsl(38 60% 10%) 100%);
+  --banner-ring: hsl(38 82% 52% / 0.2);
+  --banner-icon-bg: hsl(38 82% 52% / 0.15);
+  --banner-icon-text: hsl(38 82% 52%);
+  --banner-label: hsl(38 70% 52% / 0.6);
+
+  --price-valid: hsl(142 65% 42%);
+  --price-warning: hsl(38 82% 52%);
+  --price-danger: hsl(0 72% 58%);
+}
+
+/* ── CTA card theme vars ────────────────────────────── */
+:root {
+  --cta-bg: linear-gradient(135deg, hsl(36 70% 96%) 0%, hsl(40 50% 98%) 50%, hsl(36 60% 95%) 100%);
+  --cta-spark-top: radial-gradient(circle, hsl(38 80% 44%) 0%, transparent 70%);
+  --cta-spark-bottom: radial-gradient(circle, hsl(217 80% 52%) 0%, transparent 70%);
+  --cta-dot-fill: hsl(36 50% 20%);
+  --cta-spark-top-opacity: 0.22;
+  --cta-spark-bottom-opacity: 0.14;
+  --cta-dot-opacity: 0.03;
+  --cta-ring: hsl(38 60% 80%);
+  --cta-ring-hover: hsl(38 60% 65%);
+}
+
+.dark {
+  --cta-bg: linear-gradient(135deg, hsl(222 70% 10%) 0%, hsl(217 80% 16%) 50%, hsl(222 60% 10%) 100%);
+  --cta-spark-top: radial-gradient(circle, hsl(38 82% 52%) 0%, transparent 70%);
+  --cta-spark-bottom: radial-gradient(circle, hsl(217 100% 65%) 0%, transparent 70%);
+  --cta-dot-fill: white;
+  --cta-spark-top-opacity: 0.2;
+  --cta-spark-bottom-opacity: 0.15;
+  --cta-dot-opacity: 0.04;
+  --cta-ring: hsl(0 0% 100% / 0.08);
+  --cta-ring-hover: hsl(0 0% 100% / 0.14);
+}
+
+/* ── KPI card glows ─────────────────────────────────── */
+.kpi-glow-amber {
+  box-shadow: 0 0 0 1px hsl(var(--border)), 0 4px 24px hsl(38 82% 52% / 0.14);
+}
+
+.kpi-glow-green {
+  box-shadow: 0 0 0 1px hsl(var(--border)), 0 4px 24px hsl(142 65% 40% / 0.14);
+}
+
+/* ── Light-mode tinted card borders ─────────────────── */
+.light .kpi-glow-amber {
+  box-shadow: 0 0 0 1px hsl(38 80% 44% / 0.25), 0 4px 20px hsl(38 80% 44% / 0.10);
+}
+
+.light .kpi-glow-green {
+  box-shadow: 0 0 0 1px hsl(142 58% 34% / 0.25), 0 4px 20px hsl(142 58% 34% / 0.10);
+}
+
+/* ── Scrollbar (dark) ───────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}

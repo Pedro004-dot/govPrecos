@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wireframe v2 - Detalhamento do item (barras / distribuição)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1A71FF;
+      --primary-foreground: #fff;
+      --muted: #f4f4f5;
+      --muted-foreground: #71717a;
+      --border: #e4e4e7;
+      --foreground: #18181b;
+      --card: #fff;
+      --bar-context: #e0e7ff;
+      --bar-nav: #dbeafe;
+      --bar-action: #bfdbfe;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', -apple-system, sans-serif;
+      font-size: 14px;
+      color: var(--foreground);
+      background: #fafafa;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Topo */
+    .top-bar {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .breadcrumb { font-size: 13px; color: var(--muted-foreground); }
+    .breadcrumb a { color: var(--primary); text-decoration: none; }
+    .item-nav {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      color: var(--muted-foreground);
+    }
+
+    .content-wrap {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+    }
+
+    /* ========== COLUNA ESQUERDA (wireframe com barras) ========== */
+    .sidebar {
+      width: 260px;
+      min-width: 260px;
+      background: var(--card);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+    }
+
+    /* Barra 1: Contexto do item (compacto) */
+    .sidebar .bar-context {
+      padding: 16px;
+      background: var(--bar-context);
+      border-bottom: 2px solid #a5b4fc;
+      flex-shrink: 0;
+    }
+    .sidebar .bar-context .titulo-bar {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted-foreground);
+      margin-bottom: 8px;
+    }
+    .sidebar .bar-context .conteudo {
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .sidebar .bar-context .conteudo strong { color: var(--foreground); }
+
+    /* Label de seção */
+    .sidebar .label-secao {
+      padding: 12px 16px 6px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted-foreground);
+    }
+
+    /* Barras 2–4: Preços gov / Cotação direta / Gráficos (ações que controlam a área direita) */
+    .sidebar .bar-nav-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 0 12px 12px;
+    }
+    .sidebar .bar-nav {
+      padding: 14px 16px;
+      background: var(--bar-nav);
+      border: 1px solid #93c5fd;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--foreground);
+      transition: background 0.15s;
+    }
+    .sidebar .bar-nav:hover {
+      background: #bfdbfe;
+    }
+    .sidebar .bar-nav.ativo {
+      background: var(--primary);
+      color: var(--primary-foreground);
+      border-color: var(--primary);
+    }
+    .sidebar .bar-nav .icon {
+      width: 20px;
+      height: 20px;
+      background: rgba(0,0,0,0.15);
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+    .sidebar .bar-nav.ativo .icon {
+      background: rgba(255,255,255,0.9);
+    }
+
+    /* Barra 5: Gerar relatório (ação de página) */
+    .sidebar .bar-action-wrap {
+      padding: 12px 16px;
+      border-top: 2px solid var(--border);
+      background: var(--muted);
+      flex-shrink: 0;
+    }
+    .sidebar .bar-action {
+      width: 100%;
+      padding: 12px 16px;
+      background: var(--primary);
+      color: var(--primary-foreground);
+      border: none;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .sidebar .bar-action:hover { filter: brightness(1.05); }
+
+    /* ========== ÁREA DIREITA (conteúdo controlado pela seleção à esquerda) ========== */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      background: var(--muted);
+    }
+
+    .main .indicator {
+      padding: 10px 16px;
+      background: var(--card);
+      border: 2px dashed var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--muted-foreground);
+    }
+    .main .indicator strong { color: var(--primary); }
+
+    /* Barras de conteúdo (placeholders) */
+    .main .bar-stats {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+    }
+    .main .bar-stat {
+      height: 72px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .main .bar-stat .label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted-foreground);
+      margin-bottom: 4px;
+    }
+    .main .bar-stat .value { font-size: 18px; font-weight: 700; }
+
+    .main .bar-formula {
+      height: 48px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .main .bar-formula .label { font-size: 13px; color: var(--muted-foreground); }
+    .main .bar-formula .select { width: 200px; height: 36px; border: 1px solid var(--border); border-radius: 6px; }
+
+    .main .bar-card {
+      flex: 1;
+      min-height: 280px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .main .bar-card .header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .main .bar-card .header h2 { margin: 0; font-size: 16px; font-weight: 600; }
+    .main .bar-card .header .btn { padding: 8px 16px; background: var(--primary); color: var(--primary-foreground); border: none; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; }
+    .main .bar-card .body {
+      flex: 1;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted-foreground);
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .legenda {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      max-width: 320px;
+      padding: 12px 16px;
+      background: var(--foreground);
+      color: var(--card);
+      font-size: 12px;
+      line-height: 1.5;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .legenda strong { display: block; margin-bottom: 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.9; }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- Topo: breadcrumb + navegação entre itens -->
+    <header class="top-bar">
+      <div>
+        <div class="breadcrumb">
+          <a href="#">Cotações</a> / <a href="#">Compra material escolar</a> / <span>Lapis preto</span>
+        </div>
+        <p style="margin: 4px 0 0; font-size: 11px; color: var(--muted-foreground);">Detalhamento do item</p>
+      </div>
+      <div class="item-nav">
+        <span>&larr; Item anterior</span>
+        <span><strong>1 de 2</strong></span>
+        <span>Item seguinte &rarr;</span>
+      </div>
+    </header>
+
+    <div class="content-wrap">
+      <!-- ========== COLUNA ESQUERDA (barras) ========== -->
+      <aside class="sidebar">
+        <!-- Barra 1: Contexto do item -->
+        <div class="bar-context">
+          <div class="titulo-bar">Contexto do item</div>
+          <div class="conteudo">
+            <strong>Cotação:</strong> Compra material escolar<br>
+            <strong>Item 1</strong> &middot; Lapis preto &middot; 20 UN
+          </div>
+        </div>
+
+        <!-- Label + Barras 2–4: o que exibir nesta tela -->
+        <div class="label-secao">O que exibir nesta tela</div>
+        <div class="bar-nav-wrap">
+          <div class="bar-nav ativo">
+            <span class="icon"></span>
+            Preços governamentais
+          </div>
+          <div class="bar-nav">
+            <span class="icon"></span>
+            Cotação direta
+          </div>
+          <div class="bar-nav">
+            <span class="icon"></span>
+            Gráficos comparativos
+          </div>
+        </div>
+
+        <!-- Barra 5: Ação de página -->
+        <div class="bar-action-wrap">
+          <button type="button" class="bar-action">Gerar relatório</button>
+        </div>
+      </aside>
+
+      <!-- ========== ÁREA DIREITA ========== -->
+      <main class="main">
+        <div class="indicator">
+          <strong>Preços governamentais</strong> selecionado &rarr; conteúdo abaixo: estatísticas, fórmula e lista de preços vinculados.
+        </div>
+
+        <!-- Bloco: 6 cards de estatísticas -->
+        <div class="bar-stats">
+          <div class="bar-stat"><div class="label">Qnt. Preços</div><div class="value">3</div></div>
+          <div class="bar-stat"><div class="label">Média dos Preços</div><div class="value">R$ 1,28</div></div>
+          <div class="bar-stat"><div class="label">Mediana</div><div class="value">R$ 0,70</div></div>
+          <div class="bar-stat"><div class="label">Média da Cotação</div><div class="value">R$ 14,00</div></div>
+          <div class="bar-stat"><div class="label">Desvio padrão</div><div class="value">R$ 1,11</div></div>
+          <div class="bar-stat"><div class="label">Coef. variação</div><div class="value">86,98%</div></div>
+        </div>
+
+        <!-- Barra: fórmula -->
+        <div class="bar-formula">
+          <span class="label">Selecione a fórmula para cálculo</span>
+          <div class="select"></div>
+        </div>
+
+        <!-- Card: Preços selecionados -->
+        <div class="bar-card">
+          <div class="header">
+            <h2>Preços selecionados</h2>
+            <button type="button" class="btn">+ Incluir preço</button>
+          </div>
+          <div class="body">
+            Lista de preços vinculados (PNCP) &mdash; descrição, município, quantidade, UF, data, valor
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <div class="legenda">
+      <strong>Wireframe v2 (barras)</strong>
+      Coluna esquerda: 1) Contexto do item (compacto). 2) &ldquo;O que exibir&rdquo; = 3 opções que controlam o conteúdo à direita (Preços gov / Cotação direta / Gráficos). 3) Gerar relatório (ação de página). Aprovando esta distribuição, aplicamos no ItemDetalhamento.tsx.
+    </div>
+  </div>
+</body>
+</html>
