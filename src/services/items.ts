@@ -42,11 +42,39 @@ export interface UploadResponse {
 
 const LIMIT = 20;
 
+export interface BuscarOptions {
+    query: string;
+    limit?: number;
+    offset?: number;
+    lat?: number;
+    lng?: number;
+    raioKm?: number;
+}
+
 export const itensService = {
-    buscar: async (query: string, limit: number = LIMIT, offset: number = 0): Promise<BuscaItensResponse> => {
-        const response = await api.get<BuscaItensResponse>('/itens-licitacao/buscar', {
-            params: { q: query, limit, offset }
-        });
+    buscar: async (
+        queryOrOptions: string | BuscarOptions,
+        limit: number = LIMIT,
+        offset: number = 0
+    ): Promise<BuscaItensResponse> => {
+        // Suporte para API antiga (3 argumentos) e nova (objeto de opções)
+        let params: Record<string, unknown>;
+
+        if (typeof queryOrOptions === 'string') {
+            params = { q: queryOrOptions, limit, offset };
+        } else {
+            const { query, lat, lng, raioKm, ...rest } = queryOrOptions;
+            params = {
+                q: query,
+                limit: rest.limit ?? LIMIT,
+                offset: rest.offset ?? 0,
+                ...(lat != null && { lat }),
+                ...(lng != null && { lng }),
+                ...(raioKm != null && { raioKm }),
+            };
+        }
+
+        const response = await api.get<BuscaItensResponse>('/itens-licitacao/buscar', { params });
         return response.data;
     },
 

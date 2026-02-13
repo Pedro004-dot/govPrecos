@@ -100,9 +100,15 @@ export function CardResultadoExpandivel({
             <Badge variant="secondary" className="font-mono text-xs w-9 justify-center">
               {item.ufSigla ?? '—'}
             </Badge>
-            <span className="text-muted-foreground w-24 text-right">
-              {formatDate(item.dataLicitacao)}
-            </span>
+            {item.distanciaKm != null ? (
+              <span className="text-muted-foreground w-24 text-right font-mono">
+                {item.distanciaKm.toFixed(0)} km
+              </span>
+            ) : (
+              <span className="text-muted-foreground w-24 text-right">
+                {formatDate(item.dataLicitacao)}
+              </span>
+            )}
             <span className="font-semibold text-foreground tabular-nums min-w-[5rem] text-right">
               {item.valorUnitarioEstimado != null
                 ? formatCurrency(item.valorUnitarioEstimado)
@@ -224,6 +230,9 @@ export function CardResultadoExpandivel({
                     <dt className="text-muted-foreground">Município / UF</dt>
                     <dd className="font-medium mt-0.5">
                       {item.municipioNome ?? '—'} {item.ufSigla ? ` / ${item.ufSigla}` : ''}
+                      {item.distanciaKm != null && (
+                        <span className="text-muted-foreground ml-2">({item.distanciaKm.toFixed(0)} km)</span>
+                      )}
                     </dd>
                   </div>
                   <div>

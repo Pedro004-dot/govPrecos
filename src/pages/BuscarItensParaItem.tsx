@@ -5,13 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
   ArrowLeft,
   Search as SearchIcon,
   Loader2,
@@ -22,6 +15,8 @@ import {
 import { itensService, type ItemBusca } from '@/services/items';
 import { projetosService, type ProjetoItem, type ItemFonteDetalhada } from '@/services/projetos';
 import { CardResultadoExpandivel } from '@/components/busca/CardResultadoExpandivel';
+import { CidadeRaioFilter, type CidadeRaioValue } from '@/components/busca/CidadeRaioFilter';
+import { FiltrosResultados } from '@/components/busca/FiltrosResultados';
 
 const LIMIT = 20;
 
@@ -40,6 +35,8 @@ export function BuscarItensParaItem() {
   const [loading, setLoading] = useState(false);
   const [linking, setLinking] = useState(false);
   const [loadingContext, setLoadingContext] = useState(true);
+  const [cidadeRaio, setCidadeRaio] = useState<CidadeRaioValue>({ municipio: null, raioKm: null });
+  const [itensFiltrados, setItensFiltrados] = useState<ItemBusca[]>([]);
 
   // Set de IDs de licitações já vinculadas ao item
   const idsVinculados = useMemo(() => {
@@ -83,7 +80,14 @@ export function BuscarItensParaItem() {
     if (!searchTerm.trim()) return;
     setLoading(true);
     try {
-      const data = await itensService.buscar(searchTerm, LIMIT, off);
+      const data = await itensService.buscar({
+        query: searchTerm,
+        limit: LIMIT,
+        offset: off,
+        lat: cidadeRaio.municipio?.latitude,
+        lng: cidadeRaio.municipio?.longitude,
+        raioKm: cidadeRaio.raioKm ?? undefined,
+      });
       if (data.success) {
         setResults(data.itens || []);
         setTotal(data.total ?? 0);
@@ -112,6 +116,7 @@ export function BuscarItensParaItem() {
     setResults([]);
     setTotal(0);
     setOffset(0);
+    setCidadeRaio({ municipio: null, raioKm: null });
   };
 
   const toggleSelect = (itemId: string) => {
@@ -124,10 +129,10 @@ export function BuscarItensParaItem() {
   };
 
   const handleSelectAll = () => {
-    if (selectedIds.size === resultadosFiltrados.length) {
+    if (selectedIds.size === itensFiltrados.length) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(resultadosFiltrados.map((i) => i.id)));
+      setSelectedIds(new Set(itensFiltrados.map((i) => i.id)));
     }
   };
 
@@ -214,13 +219,16 @@ export function BuscarItensParaItem() {
                     Busca exata
                   </label>
                 </div>
+                <div className="sm:col-span-2 lg:col-span-3">
+                  <CidadeRaioFilter
+                    value={cidadeRaio}
+                    onChange={setCidadeRaio}
+                  />
+                </div>
               </div>
               <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" className="gap-2" disabled>
-                    <Filter className="w-4 h-4" />
-                    Mais filtros
-                  </Button>
+                 
                 </div>
                 <div className="flex items-center gap-2">
                   <Button variant="ghost" size="sm" onClick={handleClearFilters}>
@@ -244,50 +252,43 @@ export function BuscarItensParaItem() {
             </CardContent>
           </Card>
 
-          {/* Ordenação + Selecionar todos */}
+          {/* Filtros dinâmicos */}
           {resultadosFiltrados.length > 0 && (
+            <FiltrosResultados
+              itens={resultadosFiltrados}
+              onFiltrar={setItensFiltrados}
+              temFiltroRegiao={!!cidadeRaio.municipio}
+            />
+          )}
+
+          {/* Contagem + Selecionar todos */}
+          {itensFiltrados.length > 0 && (
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <Select defaultValue="relevancia" disabled>
-                  <SelectTrigger className="w-[180px] h-9">
-                    <SelectValue placeholder="Ordenar por" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="relevancia">Relevância</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select defaultValue="desc" disabled>
-                  <SelectTrigger className="w-[140px] h-9">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="desc">Decrescente</SelectItem>
-                    <SelectItem value="asc">Crescente</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex items-center gap-3">
+                <span className="text-sm text-muted-foreground">
+                  {itensFiltrados.length} de {resultadosFiltrados.length} resultado(s)
+                </span>
                 {resultadosOcultados > 0 && (
-                  <p className="text-xs text-muted-foreground">
-                    {resultadosOcultados} resultado(s) oculto(s) (já vinculado(s))
-                  </p>
+                  <span className="text-xs text-muted-foreground/60">
+                    ({resultadosOcultados} já vinculado(s))
+                  </span>
                 )}
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="bg-success/10 text-success hover:bg-success/20 border-success/30"
-                  onClick={handleSelectAll}
-                >
-                  {selectedIds.size === resultadosFiltrados.length ? 'Desmarcar todos' : 'Selecionar todos'}
-                </Button>
               </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className="bg-success/10 text-success hover:bg-success/20 border-success/30"
+                onClick={handleSelectAll}
+              >
+                {selectedIds.size === itensFiltrados.length ? 'Desmarcar todos' : 'Selecionar todos'}
+              </Button>
             </div>
           )}
 
           {/* Resultados: cards expansíveis (dados da licitação no card, abrir pra baixo) */}
-          {resultadosFiltrados.length > 0 && (
+          {itensFiltrados.length > 0 && (
             <div className="space-y-3">
-              {resultadosFiltrados.map((item) => (
+              {itensFiltrados.map((item) => (
                 <CardResultadoExpandivel
                   key={item.id}
                   item={item}

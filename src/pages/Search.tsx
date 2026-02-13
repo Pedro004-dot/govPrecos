@@ -43,6 +43,8 @@ import { itensService, type ItemBusca } from '@/services/items';
 import { projetosService, type ProjetoItem } from '@/services/projetos';
 import { SourceCounter } from '@/components/projeto/SourceCounter';
 import { DetalheItemSheet } from '@/components/busca/DetalheItemSheet';
+import { CidadeRaioFilter, type CidadeRaioValue } from '@/components/busca/CidadeRaioFilter';
+import { FiltrosResultados } from '@/components/busca/FiltrosResultados';
 
 const LIMIT = 20;
 
@@ -60,6 +62,8 @@ export function Search() {
   const [itemContext, setItemContext] = useState<ProjetoItem | null>(null);
   const [detailItem, setDetailItem] = useState<ItemBusca | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [cidadeRaio, setCidadeRaio] = useState<CidadeRaioValue>({ municipio: null, raioKm: null });
+  const [itensFiltrados, setItensFiltrados] = useState<ItemBusca[]>([]);
 
   const itemIdFromUrl = searchParams.get('itemId');
 
@@ -98,11 +102,19 @@ export function Search() {
     setSearchParams(next);
   };
 
-  const performSearch = async (query: string, limit: number = LIMIT, off: number = 0) => {
+  const performSearch = async (query: string, limit: number = LIMIT, off: number = 0, geoFilter?: CidadeRaioValue) => {
     if (!query.trim()) return;
     setLoading(true);
     try {
-      const data = await itensService.buscar(query, limit, off);
+      const geo = geoFilter ?? cidadeRaio;
+      const data = await itensService.buscar({
+        query,
+        limit,
+        offset: off,
+        lat: geo.municipio?.latitude,
+        lng: geo.municipio?.longitude,
+        raioKm: geo.raioKm ?? undefined,
+      });
       if (data.success) {
         setSearchResults(data.itens || []);
         setTotal(data.total ?? 0);
@@ -136,6 +148,7 @@ export function Search() {
     setSearchResults([]);
     setTotal(0);
     setOffset(0);
+    setCidadeRaio({ municipio: null, raioKm: null });
     setSearchParams(new URLSearchParams());
   };
 
@@ -153,10 +166,10 @@ export function Search() {
   };
 
   const handleSelectAll = () => {
-    if (selectedItems.size === searchResults.length) {
+    if (selectedItems.size === itensFiltrados.length) {
       setSelectedItems(new Set());
     } else {
-      setSelectedItems(new Set(searchResults.map((i) => i.id)));
+      setSelectedItems(new Set(itensFiltrados.map((i) => i.id)));
     }
   };
 
@@ -205,7 +218,7 @@ export function Search() {
 
   const currentPage = Math.floor(offset / LIMIT) + 1;
   const totalPages = Math.max(1, Math.ceil(total / LIMIT));
-  const allSelected = searchResults.length > 0 && selectedItems.size === searchResults.length;
+  const allSelected = itensFiltrados.length > 0 && selectedItems.size === itensFiltrados.length;
 
   return (
     <div className="space-y-8 w-full animate-dash-in">
@@ -311,88 +324,33 @@ export function Search() {
                 </div>
               </div>
 
-              {/* Filter row */}
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-2 h-8 text-xs border-border/50 text-muted-foreground/50"
-                    disabled
-                  >
-                    <Filter className="w-3.5 h-3.5" />
-                    Mais filtros
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-8 text-xs border-border/50 text-muted-foreground/50"
-                    disabled
-                  >
-                    Filtro avançado
-                  </Button>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleClearFilters}
-                    className="h-8 text-xs text-muted-foreground/60 hover:text-foreground"
-                  >
-                    Limpar
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={handleSearch}
-                    disabled={loading || !searchTerm.trim()}
-                    className="h-8 gap-2 text-xs bg-primary hover:bg-primary/90 text-primary-foreground px-4"
-                  >
-                    {loading ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <SearchIcon className="w-3.5 h-3.5" />
-                    )}
-                    Buscar
-                    {!loading && (
-                      <kbd className="ml-1 hidden sm:inline-flex h-4 items-center rounded border border-primary-foreground/20 px-1 font-mono text-[9px] text-primary-foreground/50">
-                        ↵
-                      </kbd>
-                    )}
-                  </Button>
-                </div>
-              </div>
+              {/* Filtro de cidade e raio */}
+              <CidadeRaioFilter
+                value={cidadeRaio}
+                onChange={setCidadeRaio}
+              />
+
+
             </div>
 
-            {/* Results controls row */}
+            {/* Filtros dinâmicos */}
             {searchResults.length > 0 && (
+              <FiltrosResultados
+                itens={searchResults}
+                onFiltrar={setItensFiltrados}
+                temFiltroRegiao={!!cidadeRaio.municipio}
+              />
+            )}
+
+            {/* Results controls row */}
+            {itensFiltrados.length > 0 && (
               <div
                 className="flex flex-wrap items-center justify-between gap-3 animate-dash-in"
                 style={{ animationDelay: '0ms' }}
               >
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2">
-                    <Select defaultValue="relevancia" disabled>
-                      <SelectTrigger className="w-[160px] h-8 text-xs bg-card border-border/50">
-                        <SelectValue placeholder="Ordenar por" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="relevancia">Relevância</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Select defaultValue="desc" disabled>
-                      <SelectTrigger className="w-[120px] h-8 text-xs bg-card border-border/50">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="desc">Decrescente</SelectItem>
-                        <SelectItem value="asc">Crescente</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <span className="font-mono text-[11px] text-muted-foreground/40">
-                    {total.toLocaleString('pt-BR')} resultado{total !== 1 ? 's' : ''}
-                  </span>
-                </div>
+                <span className="font-mono text-[11px] text-muted-foreground/40">
+                  {itensFiltrados.length.toLocaleString('pt-BR')} de {searchResults.length.toLocaleString('pt-BR')} resultado{searchResults.length !== 1 ? 's' : ''}
+                </span>
                 <Button
                   size="sm"
                   variant="outline"
@@ -405,7 +363,7 @@ export function Search() {
             )}
 
             {/* ── Results Table ──────────────────────────────── */}
-            {searchResults.length > 0 && (
+            {itensFiltrados.length > 0 && (
               <div className="rounded-xl border border-border/60 overflow-hidden animate-dash-in">
                 <Table className="table-fixed w-full">
                   <TableHeader>
@@ -428,7 +386,7 @@ export function Search() {
                       </TableHead>
                       <TableHead className="bg-card/80 w-[11%]">
                         <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground/50">
-                          Data
+                          {cidadeRaio.municipio ? 'Dist.' : 'Data'}
                         </span>
                       </TableHead>
                       <TableHead className="text-right bg-card/80 w-[16%]">
@@ -440,7 +398,7 @@ export function Search() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {searchResults.map((item, index) => {
+                    {itensFiltrados.map((item, index) => {
                       const isSelected = selectedItems.has(item.id);
                       return (
                         <TableRow
@@ -496,7 +454,13 @@ export function Search() {
                           </TableCell>
 
                           <TableCell>
-                            <span className="font-mono text-xs text-muted-foreground/40">—</span>
+                            {item.distanciaKm != null ? (
+                              <span className="font-mono text-xs text-muted-foreground/60">
+                                {item.distanciaKm.toFixed(0)} km
+                              </span>
+                            ) : (
+                              <span className="font-mono text-xs text-muted-foreground/40">—</span>
+                            )}
                           </TableCell>
 
                           <TableCell className="text-right">
