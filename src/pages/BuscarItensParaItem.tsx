@@ -8,7 +8,6 @@ import {
   ArrowLeft,
   Search as SearchIcon,
   Loader2,
-  Filter,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';

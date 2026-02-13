@@ -11,13 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,7 +29,6 @@ import {
   ChevronLeft,
   ChevronRight,
   MoreHorizontal,
-  Filter,
   Link as LinkIcon,
   ArrowRight,
 } from 'lucide-react';
