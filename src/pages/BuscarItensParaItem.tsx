@@ -79,13 +79,16 @@ export function BuscarItensParaItem() {
     if (!searchTerm.trim()) return;
     setLoading(true);
     try {
+      // Só envia raioKm se houver cidade selecionada (para filtro geográfico)
+      const temCidade = cidadeRaio.municipio != null;
       const data = await itensService.buscar({
         query: searchTerm,
         limit: LIMIT,
         offset: off,
         lat: cidadeRaio.municipio?.latitude,
         lng: cidadeRaio.municipio?.longitude,
-        raioKm: cidadeRaio.raioKm ?? undefined,
+        raioKm: temCidade ? (cidadeRaio.raioKm ?? undefined) : undefined,
+        ufSigla: cidadeRaio.ufSigla ?? undefined,
       });
       if (data.success) {
         setResults(data.itens || []);
@@ -115,7 +118,7 @@ export function BuscarItensParaItem() {
     setResults([]);
     setTotal(0);
     setOffset(0);
-    setCidadeRaio({ municipio: null, raioKm: null });
+    setCidadeRaio({ municipio: null, raioKm: null, ufSigla: null });
   };
 
   const toggleSelect = (itemId: string) => {

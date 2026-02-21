@@ -31,6 +31,8 @@ const UNIDADES = [
   { value: 'KIT', label: 'KIT - Kit' },
   { value: 'PAR', label: 'PAR - Par' },
   { value: 'M²', label: 'M² - Metro quadrado' },
+  { value: 'MÊS', label: 'MÊS - Mês' },
+  { value: 'ANO', label: 'ANO - Ano' },
 ];
 
 interface AdicionarItemSheetProps {
@@ -38,6 +40,7 @@ interface AdicionarItemSheetProps {
   onClose: () => void;
   projeto: Projeto | null;
   onSuccess: () => void;
+  onItemCreated?: (itemId: string, itemNome: string) => void;
 }
 
 export function AdicionarItemSheet({
@@ -45,12 +48,14 @@ export function AdicionarItemSheet({
   onClose,
   projeto,
   onSuccess,
+  onItemCreated,
 }: AdicionarItemSheetProps) {
   const [saving, setSaving] = useState(false);
   const [nome, setNome] = useState('');
   const [quantidade, setQuantidade] = useState('1');
   const [descricao, setDescricao] = useState('');
   const [unidadeMedida, setUnidadeMedida] = useState('UN');
+  const [tamanhoUnidade, setTamanhoUnidade] = useState('');
   const [justificativas, setJustificativas] = useState('');
 
   const resetForm = () => {
@@ -58,6 +63,7 @@ export function AdicionarItemSheet({
     setQuantidade('1');
     setDescricao('');
     setUnidadeMedida('UN');
+    setTamanhoUnidade('');
     setJustificativas('');
   };
 
@@ -90,13 +96,19 @@ export function AdicionarItemSheet({
         descricao: descricao.trim() || undefined,
         quantidade: qty,
         unidadeMedida,
+        tamanhoUnidade: tamanhoUnidade.trim() || undefined,
         observacoes: justificativas.trim() || undefined,
       });
 
       if (response.success) {
+        onSuccess();
         resetForm();
         onClose();
-        onSuccess();
+
+        // Notify parent component that item was created
+        if (onItemCreated) {
+          onItemCreated(response.item.id, nomeTrim);
+        }
       }
     } catch (error) {
       console.error('Failed to create item:', error);
@@ -190,6 +202,22 @@ export function AdicionarItemSheet({
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+
+                <div className="sm:col-span-2">
+                  <Label htmlFor="item-tamanho">
+                    Tamanho/Peso (opcional)
+                  </Label>
+                  <Input
+                    id="item-tamanho"
+                    placeholder="Ex: 1 litro, 500g, 2kg, 250ml"
+                    value={tamanhoUnidade}
+                    onChange={(e) => setTamanhoUnidade(e.target.value)}
+                    className="mt-1.5"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Especifique o tamanho ou peso unitário do produto
+                  </p>
                 </div>
 
                 <div className="sm:col-span-2">

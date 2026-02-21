@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -28,6 +28,13 @@ export function CardResultadoExpandivel({
   const [fornecedor, setFornecedor] = useState<Fornecedor | null>(null);
   const [loadingFornecedor, setLoadingFornecedor] = useState(false);
   const [erroFornecedor, setErroFornecedor] = useState<string | null>(null);
+
+  // Resetar estado do fornecedor quando o item mudar
+  useEffect(() => {
+    setFornecedor(null);
+    setLoadingFornecedor(false);
+    setErroFornecedor(null);
+  }, [item.id]);
 
   const formatDate = (dateStr: string | undefined) => {
     if (!dateStr) return '—';
@@ -206,7 +213,7 @@ export function CardResultadoExpandivel({
                     <dd className="font-medium mt-0.5 text-foreground">{item.descricao}</dd>
                   </div>
                   <div>
-                    <dt className="text-muted-foreground">PNCP ID do item</dt>
+                    <dt className="text-muted-foreground">Número da licitação e do item</dt>
                     <dd className="font-medium mt-0.5 text-foreground">
                       {item.numeroControlePNCP
                         ? `${item.numeroControlePNCP} - item ${item.numeroItem}`

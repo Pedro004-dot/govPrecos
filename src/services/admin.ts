@@ -38,7 +38,7 @@ export interface UpdateUserPayload {
 // Types - Tenants
 // ══════════════════════════════════════════════════════════════════════
 
-export type TenantTipo = 'prefeitura' | 'camara';
+export type TenantTipo = 'prefeitura' | 'camara' | 'consorcio';
 
 export interface Tenant {
   id: string;

@@ -100,13 +100,16 @@ export function Search() {
     setLoading(true);
     try {
       const geo = geoFilter ?? cidadeRaio;
+      // Só envia raioKm se houver cidade selecionada (para filtro geográfico)
+      const temCidade = geo.municipio != null;
       const data = await itensService.buscar({
         query,
         limit,
         offset: off,
         lat: geo.municipio?.latitude,
         lng: geo.municipio?.longitude,
-        raioKm: geo.raioKm ?? undefined,
+        raioKm: temCidade ? (geo.raioKm ?? undefined) : undefined,
+        ufSigla: geo.ufSigla ?? undefined,
       });
       if (data.success) {
         setSearchResults(data.itens || []);
@@ -141,12 +144,8 @@ export function Search() {
     setSearchResults([]);
     setTotal(0);
     setOffset(0);
-    setCidadeRaio({ municipio: null, raioKm: null });
+    setCidadeRaio({ municipio: null, raioKm: null, ufSigla: null });
     setSearchParams(new URLSearchParams());
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') handleSearch();
   };
 
   const toggleItemSelection = (itemId: string) => {
@@ -311,7 +310,7 @@ export function Search() {
                     placeholder="Descrição do item — ex.: Lápis preto, Resma de papel A4..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    onKeyDown={handleKeyDown}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                     className="pl-10 h-11 bg-background/50 border-border/60 focus:border-primary/50 focus:bg-background transition-colors text-sm placeholder:text-muted-foreground/35"
                   />
                 </div>
@@ -323,7 +322,35 @@ export function Search() {
                 onChange={setCidadeRaio}
               />
 
-
+              {/* Botões de ação */}
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleClearFilters}
+                  className="h-9 text-xs"
+                >
+                  Limpar filtros
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleSearch}
+                  disabled={loading || !searchTerm.trim()}
+                  className="h-9 text-xs bg-primary hover:bg-primary/90"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" />
+                      Buscando...
+                    </>
+                  ) : (
+                    <>
+                      <SearchIcon className="w-3.5 h-3.5 mr-2" />
+                      Buscar
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
 
             {/* Filtros dinâmicos */}

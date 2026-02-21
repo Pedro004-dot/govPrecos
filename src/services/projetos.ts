@@ -25,6 +25,7 @@ export interface ProjetoItem {
   descricao?: string;
   quantidade: number;
   unidadeMedida: string;
+  tamanhoUnidade?: string;
   ordem?: number;
   medianaCalculada?: number;
   quantidadeFontes: number;
@@ -135,6 +136,7 @@ export interface CreateItemDTO {
   descricao?: string;
   quantidade: number;
   unidadeMedida: string;
+  tamanhoUnidade?: string;
   ordem?: number;
   observacoes?: string;
 }
@@ -144,6 +146,7 @@ export interface UpdateItemDTO {
   descricao?: string;
   quantidade?: number;
   unidadeMedida?: string;
+  tamanhoUnidade?: string;
   ordem?: number;
   observacoes?: string;
 }
@@ -327,12 +330,14 @@ export const projetosService = {
   // ========================================
 
   /**
-   * Generate PDF report for project
-   * Returns PDF as blob for download
+   * Generate report for project (PDF completo, PDF resumido, or XLSX)
+   * @param projetoId ID do projeto
+   * @param tipo Tipo de relatório: 'completo' | 'resumido' | 'xlsx'
+   * @returns Blob do arquivo gerado
    */
-  gerarRelatorio: async (projetoId: string): Promise<Blob> => {
+  gerarRelatorio: async (projetoId: string, tipo: 'completo' | 'resumido' | 'xlsx' = 'completo'): Promise<Blob> => {
     const response = await api.post(
-      `/projetos/${projetoId}/relatorio`,
+      `/projetos/${projetoId}/relatorio?tipo=${tipo}`,
       {},
       {
         responseType: 'blob',

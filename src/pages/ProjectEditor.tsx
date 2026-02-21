@@ -50,6 +50,7 @@ export function ProjectEditor() {
   const [itemDescricao, setItemDescricao] = useState('');
   const [itemQuantidade, setItemQuantidade] = useState('');
   const [itemUnidadeMedida, setItemUnidadeMedida] = useState('UN');
+  const [itemTamanhoUnidade, setItemTamanhoUnidade] = useState('');
 
   // Delete confirmation
   const [deleteItemId, setDeleteItemId] = useState<string | null>(null);
@@ -126,12 +127,14 @@ export function ProjectEditor() {
       setItemDescricao(item.descricao || '');
       setItemQuantidade(item.quantidade.toString());
       setItemUnidadeMedida(item.unidadeMedida);
+      setItemTamanhoUnidade(item.tamanhoUnidade || '');
     } else {
       setEditingItem(null);
       setItemNome('');
       setItemDescricao('');
       setItemQuantidade('');
       setItemUnidadeMedida('UN');
+      setItemTamanhoUnidade('');
     }
     setItemDialogOpen(true);
   };
@@ -164,6 +167,7 @@ export function ProjectEditor() {
         descricao: itemDescricao.trim() || undefined,
         quantidade,
         unidadeMedida: itemUnidadeMedida.trim(),
+        tamanhoUnidade: itemTamanhoUnidade.trim() || undefined,
       };
 
       if (editingItem) {
@@ -368,6 +372,18 @@ export function ProjectEditor() {
                   onChange={(e) => setItemUnidadeMedida(e.target.value.toUpperCase())}
                 />
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="itemTamanho">Tamanho/Peso (opcional)</Label>
+              <Input
+                id="itemTamanho"
+                placeholder="Ex: 1 litro, 500g, 2kg, 250ml"
+                value={itemTamanhoUnidade}
+                onChange={(e) => setItemTamanhoUnidade(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Especifique o tamanho ou peso unitário do produto
+              </p>
             </div>
           </div>
           <DialogFooter>

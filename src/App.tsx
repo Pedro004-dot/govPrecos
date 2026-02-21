@@ -10,6 +10,7 @@ import { ProjectDetails } from '@/pages/ProjectDetails';
 import { BuscarItensParaItem } from '@/pages/BuscarItensParaItem';
 import { ItemDetalhamento } from '@/pages/ItemDetalhamento';
 import { ItemSourceManager } from '@/pages/ItemSourceManager';
+import { Profile } from '@/pages/Profile';
 
 // Auth pages
 import { LoginPage } from '@/pages/auth/LoginPage';
@@ -126,6 +127,7 @@ function AppRoutes() {
         }
       >
         <Route index element={<Dashboard />} />
+        <Route path="perfil" element={<Profile />} />
         <Route path="buscar" element={<Search />} />
         <Route path="relatorios" element={<Relatorios />} />
         <Route path="inteligencia/fornecedores" element={<AnaliseFornecedores />} />

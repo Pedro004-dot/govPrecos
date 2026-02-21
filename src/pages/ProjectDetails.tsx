@@ -36,6 +36,7 @@ import {
 import { ExcelUploadSheet } from '@/components/excel/ExcelUploadSheet';
 import { PDFGenerator } from '@/components/projeto/PDFGenerator';
 import { AdicionarItemSheet } from '@/components/projeto/AdicionarItemSheet';
+import { ItemSuccessDialog } from '@/components/projeto/ItemSuccessDialog';
 
 type FormulaType = 'media' | 'mediana' | 'menor_preco';
 
@@ -52,6 +53,10 @@ export function ProjectDetails() {
   const [novoItemOpen, setNovoItemOpen] = useState(false);
   const [editingNome, setEditingNome] = useState(false);
   const [nomeEditado, setNomeEditado] = useState('');
+
+  // Success dialog state
+  const [successDialogOpen, setSuccessDialogOpen] = useState(false);
+  const [lastCreatedItem, setLastCreatedItem] = useState<{ id: string; nome: string } | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -126,6 +131,27 @@ export function ProjectDetails() {
     } else {
       alert('Finalize a cotação para gerar o relatório');
     }
+  };
+
+  const handleItemCreated = (itemId: string, itemNome: string) => {
+    setLastCreatedItem({ id: itemId, nome: itemNome });
+    setSuccessDialogOpen(true);
+  };
+
+  const handleAddAnother = () => {
+    setSuccessDialogOpen(false);
+    setNovoItemOpen(true);
+  };
+
+  const handleSearchPrices = () => {
+    if (!id || !lastCreatedItem) return;
+    navigate(`/projeto/${id}/item/${lastCreatedItem.id}/buscar`);
+    setSuccessDialogOpen(false);
+  };
+
+  const handleSuccessDialogClose = () => {
+    setSuccessDialogOpen(false);
+    setLastCreatedItem(null);
   };
 
   const formatCurrency = (value: number) => {
@@ -336,6 +362,16 @@ export function ProjectDetails() {
         onClose={() => setNovoItemOpen(false)}
         projeto={projeto}
         onSuccess={loadProject}
+        onItemCreated={handleItemCreated}
+      />
+
+      {/* Success Dialog */}
+      <ItemSuccessDialog
+        open={successDialogOpen}
+        itemNome={lastCreatedItem?.nome || ''}
+        onAddAnother={handleAddAnother}
+        onSearchPrices={handleSearchPrices}
+        onClose={handleSuccessDialogClose}
       />
 
       {/* ── Items Table ─────────────────────────────────────── */}
@@ -445,6 +481,11 @@ export function ProjectDetails() {
                     <TableCell className="overflow-hidden max-w-0">
                       <div>
                         <p className="text-sm font-medium text-foreground/80 truncate">{item.nome}</p>
+                        {item.tamanhoUnidade && (
+                          <p className="text-xs text-primary/60 font-mono truncate">
+                            📏 {item.tamanhoUnidade}
+                          </p>
+                        )}
                         {item.descricao && (
                           <p className="text-xs text-muted-foreground/50 truncate">{item.descricao}</p>
                         )}

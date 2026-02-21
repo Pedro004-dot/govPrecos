@@ -49,6 +49,7 @@ export interface BuscarOptions {
     lat?: number;
     lng?: number;
     raioKm?: number;
+    ufSigla?: string;
 }
 
 export const itensService = {
@@ -63,7 +64,7 @@ export const itensService = {
         if (typeof queryOrOptions === 'string') {
             params = { q: queryOrOptions, limit, offset };
         } else {
-            const { query, lat, lng, raioKm, ...rest } = queryOrOptions;
+            const { query, lat, lng, raioKm, ufSigla, ...rest } = queryOrOptions;
             params = {
                 q: query,
                 limit: rest.limit ?? LIMIT,
@@ -71,6 +72,7 @@ export const itensService = {
                 ...(lat != null && { lat }),
                 ...(lng != null && { lng }),
                 ...(raioKm != null && { raioKm }),
+                ...(ufSigla && { ufSigla }),
             };
         }
 
@@ -89,5 +91,21 @@ export const itensService = {
             },
         });
         return response.data;
+    },
+
+    downloadModelo: async () => {
+        const response = await api.get('/itens-licitacao/modelo-planilha', {
+            responseType: 'blob',
+        });
+
+        // Criar link temporário para download
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'modelo-importacao-itens.xlsx');
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
     }
 };

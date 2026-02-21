@@ -21,6 +21,7 @@ interface AuthState {
     nome: string;
     cnpj: string;
     tipo: string;
+    brasaoUrl?: string;
   } | null;
 }
 

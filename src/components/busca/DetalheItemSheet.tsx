@@ -2,7 +2,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { type ItemBusca } from '@/services/items';
 import { fornecedoresService } from '@/services/fornecedores';
 import { DetalhesFornecedor } from '@/components/fornecedor/DetalhesFornecedor';
@@ -32,6 +32,21 @@ export function DetalheItemSheet({ open, onClose, item }: DetalheItemSheetProps)
   const [fornecedor, setFornecedor] = useState<Fornecedor | null>(null);
   const [loadingFornecedor, setLoadingFornecedor] = useState(false);
   const [erroFornecedor, setErroFornecedor] = useState<string | null>(null);
+
+  // Resetar estado do fornecedor quando o item mudar ou quando o sheet fechar
+  useEffect(() => {
+    if (!open || !item) {
+      setFornecedor(null);
+      setLoadingFornecedor(false);
+      setErroFornecedor(null);
+      return;
+    }
+    
+    // Resetar quando o item.id mudar
+    setFornecedor(null);
+    setLoadingFornecedor(false);
+    setErroFornecedor(null);
+  }, [item?.id, open]);
 
   if (!item) return null;
 
@@ -158,7 +173,7 @@ export function DetalheItemSheet({ open, onClose, item }: DetalheItemSheetProps)
                   <dd className="font-medium mt-0.5">{item.descricao}</dd>
                 </div>
                 <div>
-                  <dt className="text-muted-foreground">PNCP ID do item</dt>
+                  <dt className="text-muted-foreground">Número da licitação e do item</dt>
                   <dd className="font-medium mt-0.5">
                     {item.numeroControlePNCP
                       ? `${item.numeroControlePNCP} - item ${item.numeroItem}`

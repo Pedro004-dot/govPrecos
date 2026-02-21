@@ -51,6 +51,8 @@ import { cn } from '@/lib/utils';
 const TIPO_LABELS: Record<TenantTipo, string> = {
   prefeitura: 'Prefeitura',
   camara: 'Câmara',
+  consorcio: 'Consórcio',
+  
 };
 
 export function TenantManagement() {

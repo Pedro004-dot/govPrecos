@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 export interface CidadeRaioValue {
   municipio: Municipio | null;
   raioKm: number | null;
+  ufSigla?: string | null;
 }
 
 interface CidadeRaioFilterProps {
@@ -25,7 +26,7 @@ interface CidadeRaioFilterProps {
 export function CidadeRaioFilter({ value, onChange, className }: CidadeRaioFilterProps) {
   const [ufs, setUfs] = useState<UF[]>([]);
   const [municipios, setMunicipios] = useState<Municipio[]>([]);
-  const [selectedUf, setSelectedUf] = useState<string>('');
+  const [selectedUf, setSelectedUf] = useState<string>(value.ufSigla || '');
   const [loadingUfs, setLoadingUfs] = useState(false);
   const [loadingMunicipios, setLoadingMunicipios] = useState(false);
 
@@ -46,6 +47,18 @@ export function CidadeRaioFilter({ value, onChange, className }: CidadeRaioFilte
     };
     loadUFs();
   }, []);
+
+  // Sincroniza selectedUf com value.ufSigla quando muda externamente
+  useEffect(() => {
+    if (value.ufSigla && ufs.length > 0) {
+      const uf = ufs.find((u) => u.sigla === value.ufSigla);
+      if (uf && uf.codigoUf !== selectedUf) {
+        setSelectedUf(uf.codigoUf);
+      }
+    } else if (!value.ufSigla && selectedUf) {
+      setSelectedUf('');
+    }
+  }, [value.ufSigla, ufs, selectedUf]);
 
   // Carrega municípios quando UF muda
   useEffect(() => {
@@ -72,8 +85,9 @@ export function CidadeRaioFilter({ value, onChange, className }: CidadeRaioFilte
 
   const handleUfChange = (codigoUf: string) => {
     setSelectedUf(codigoUf);
-    // Limpa município selecionado quando muda UF
-    onChange({ ...value, municipio: null });
+    const ufSelecionada = ufs.find((uf) => uf.codigoUf === codigoUf);
+    // Limpa município selecionado quando muda UF, mas mantém a UF selecionada
+    onChange({ ...value, municipio: null, ufSigla: ufSelecionada?.sigla || null });
   };
 
   const handleMunicipioChange = (codigoIbge: string) => {
@@ -91,7 +105,7 @@ export function CidadeRaioFilter({ value, onChange, className }: CidadeRaioFilte
       {/* Select de UF */}
       <div className="space-y-1.5 min-w-[100px]">
         <label className="text-xs font-medium text-muted-foreground">Estado</label>
-        <Select value={selectedUf} onValueChange={handleUfChange} disabled={loadingUfs}>
+        <Select value={selectedUf || undefined} onValueChange={handleUfChange} disabled={loadingUfs}>
           <SelectTrigger className="h-9 bg-background/50 border-border/60">
             {loadingUfs ? (
               <Loader2 className="h-4 w-4 animate-spin" />

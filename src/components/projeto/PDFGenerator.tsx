@@ -4,14 +4,24 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   Download,
   Loader2,
   CheckCircle,
   AlertTriangle,
   ExternalLink,
   FileCheck,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { projetosService, type Projeto } from '@/services/projetos';
+
+type TipoRelatorio = 'completo' | 'resumido' | 'xlsx';
 
 interface PDFGeneratorProps {
   projeto: Projeto;
@@ -21,6 +31,7 @@ export function PDFGenerator({ projeto }: PDFGeneratorProps) {
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastGenerated, setLastGenerated] = useState<Date | null>(null);
+  const [tipoRelatorio, setTipoRelatorio] = useState<TipoRelatorio>('completo');
   const [, setPreviewUrl] = useState<string | null>(null);
 
   const handleGenerate = async (preview: boolean = false) => {
@@ -28,11 +39,17 @@ export function PDFGenerator({ projeto }: PDFGeneratorProps) {
     setError(null);
 
     try {
-      // Generate PDF and get blob
-      const blob = await projetosService.gerarRelatorio(projeto.id);
+      // Generate report and get blob
+      const blob = await projetosService.gerarRelatorio(projeto.id, tipoRelatorio);
 
       // Create URL for the blob
       const url = window.URL.createObjectURL(blob);
+
+      // Determine file extension based on type
+      const extensao = tipoRelatorio === 'xlsx' ? 'xlsx' : 'pdf';
+      const nomeArquivo = `Relatorio_${tipoRelatorio}_${projeto.nome.replace(/\s+/g, '_')}_${
+        new Date().toISOString().split('T')[0]
+      }.${extensao}`;
 
       if (preview) {
         // Open in new tab for preview
@@ -42,9 +59,7 @@ export function PDFGenerator({ projeto }: PDFGeneratorProps) {
         // Download directly
         const link = document.createElement('a');
         link.href = url;
-        link.download = `Relatorio_${projeto.nome.replace(/\s+/g, '_')}_${
-          new Date().toISOString().split('T')[0]
-        }.pdf`;
+        link.download = nomeArquivo;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -57,7 +72,7 @@ export function PDFGenerator({ projeto }: PDFGeneratorProps) {
         setTimeout(() => window.URL.revokeObjectURL(url), 100);
       }
     } catch (error: any) {
-      console.error('Failed to generate PDF:', error);
+      console.error('Failed to generate report:', error);
       const errorMessage =
         error.response?.data?.message ||
         error.message ||
@@ -87,43 +102,131 @@ export function PDFGenerator({ projeto }: PDFGeneratorProps) {
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {/* PDF Contents Info */}
+        {/* Tipo de Relatório Selector */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Tipo de Relatório</label>
+          <Select
+            value={tipoRelatorio}
+            onValueChange={(value) => setTipoRelatorio(value as TipoRelatorio)}
+            disabled={generating}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Selecione o tipo de relatório" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="completo">
+                <span className="flex items-center gap-2">
+                  <FileCheck className="w-4 h-4" />
+                  <span>PDF Completo</span>
+                </span>
+              </SelectItem>
+              <SelectItem value="resumido">
+                <span className="flex items-center gap-2">
+                  <FileCheck className="w-4 h-4" />
+                  <span>PDF Resumido</span>
+                </span>
+              </SelectItem>
+              <SelectItem value="xlsx">
+                <span className="flex items-center gap-2">
+                  <FileSpreadsheet className="w-4 h-4" />
+                  <span>Planilha Excel (XLSX)</span>
+                </span>
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Report Contents Info */}
         <div className="p-4 border rounded-lg bg-background">
-          <h4 className="font-semibold text-sm mb-3">Conteúdo do Relatório PDF:</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-muted-foreground">
-            <div className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              <span>Capa com dados do projeto e identificação do órgão</span>
+          <h4 className="font-semibold text-sm mb-3">
+            {tipoRelatorio === 'xlsx' ? 'Conteúdo da Planilha:' : 'Conteúdo do Relatório PDF:'}
+          </h4>
+          {tipoRelatorio === 'xlsx' ? (
+            <div className="grid grid-cols-1 gap-2 text-xs text-muted-foreground">
+              <div className="flex items-start gap-2">
+                <span className="text-primary">•</span>
+                <span>Abas: Resumo, Itens, Fontes e Estatísticas</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-primary">•</span>
+                <span>Dados organizados em tabelas para análise</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-primary">•</span>
+                <span>Valores e cálculos prontos para uso</span>
+              </div>
             </div>
-            <div className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              <span>Metodologia de pesquisa (Lei 14.133/2021)</span>
+          ) : tipoRelatorio === 'resumido' ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-muted-foreground">
+              <div className="flex items-start gap-2">
+                <span className="text-primary">•</span>
+                <span>Capa com dados do projeto</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-primary">•</span>
+                <span>Resumo executivo</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-primary">•</span>
+                <span>Itens com top 3 fontes principais</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-primary">•</span>
+                <span>Resumo financeiro</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-primary">•</span>
+                <span>QR Code para acesso online</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-primary">•</span>
+                <span>Seção para assinatura</span>
+              </div>
             </div>
-            <div className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              <span>Tabelas detalhadas por item com fontes PNCP</span>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-muted-foreground">
+              <div className="flex items-start gap-2">
+                <span className="text-primary">•</span>
+                <span>Capa com dados do projeto e identificação do órgão</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-primary">•</span>
+                <span>Metodologia de pesquisa (Lei 14.133/2021)</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-primary">•</span>
+                <span>Tabelas detalhadas por item com fontes PNCP</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-primary">•</span>
+                <span>Links clicáveis para verificação no PNCP</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-primary">•</span>
+                <span>Cálculo de mediana e valores totais</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-primary">•</span>
+                <span>Justificativas de outliers (se aplicável)</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-primary">•</span>
+                <span>Resumo financeiro do projeto</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-primary">•</span>
+                <span>Extrato de fontes utilizadas</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-primary">•</span>
+                <span>QR Code para acesso online</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="text-primary">•</span>
+                <span>Seção para assinatura do responsável</span>
+              </div>
             </div>
-            <div className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              <span>Links clicáveis para verificação no PNCP</span>
-            </div>
-            <div className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              <span>Cálculo de mediana e valores totais</span>
-            </div>
-            <div className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              <span>Justificativas de outliers (se aplicável)</span>
-            </div>
-            <div className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              <span>Resumo financeiro do projeto</span>
-            </div>
-            <div className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              <span>Seção para assinatura do responsável</span>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Last Generated Info */}
@@ -176,15 +279,23 @@ export function PDFGenerator({ projeto }: PDFGeneratorProps) {
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
                 <div className="text-left flex-1">
-                  <div className="font-semibold">Gerando PDF...</div>
+                  <div className="font-semibold">
+                    Gerando {tipoRelatorio === 'xlsx' ? 'Planilha' : 'PDF'}...
+                  </div>
                   <div className="text-xs opacity-90">Processando dados</div>
                 </div>
               </>
             ) : (
               <>
-                <Download className="w-5 h-5" />
+                {tipoRelatorio === 'xlsx' ? (
+                  <FileSpreadsheet className="w-5 h-5" />
+                ) : (
+                  <Download className="w-5 h-5" />
+                )}
                 <div className="text-left flex-1">
-                  <div className="font-semibold">Baixar Relatório</div>
+                  <div className="font-semibold">
+                    Baixar {tipoRelatorio === 'xlsx' ? 'Planilha' : 'Relatório'}
+                  </div>
                   <div className="text-xs opacity-90">Download automático</div>
                 </div>
               </>

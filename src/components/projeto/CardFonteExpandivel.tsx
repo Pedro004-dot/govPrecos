@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -48,6 +48,18 @@ export function CardFonteExpandivel({
   const [fornecedor, setFornecedor] = useState<Fornecedor | undefined>(fonte.fornecedor);
   const [loadingFornecedor, setLoadingFornecedor] = useState(false);
   const [erroFornecedor, setErroFornecedor] = useState<string | null>(null);
+
+  // Resetar estado do fornecedor quando a fonte mudar (exceto se já vier com fornecedor)
+  useEffect(() => {
+    // Se a fonte já tem fornecedor, manter; caso contrário, resetar estados de busca
+    if (!fonte.fornecedor) {
+      setFornecedor(undefined);
+      setLoadingFornecedor(false);
+      setErroFornecedor(null);
+    } else {
+      setFornecedor(fonte.fornecedor);
+    }
+  }, [fonte.itemLicitacaoId, fonte.fornecedor]);
 
   const toggleExpand = (e: React.MouseEvent) => {
     e.stopPropagation();
