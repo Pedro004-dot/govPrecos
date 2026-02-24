@@ -33,12 +33,27 @@ const ORDENAR_OPCOES: { value: 'criado_em' | 'acao' | 'entidade' | 'usuario_nome
 
 const ACAO_OPCOES = [
   { value: '', label: 'Todas' },
-  { value: 'create', label: 'Criar' },
-  { value: 'update', label: 'Atualizar' },
-  { value: 'delete', label: 'Excluir' },
+  // Autenticação
   { value: 'login', label: 'Login' },
   { value: 'logout', label: 'Logout' },
   { value: 'password_reset', label: 'Recuperação de senha' },
+  // CRUD genérico
+  { value: 'create', label: 'Criar' },
+  { value: 'update', label: 'Atualizar' },
+  { value: 'delete', label: 'Excluir' },
+  // Projetos
+  { value: 'finalize', label: 'Finalizar projeto' },
+  { value: 'generate_report', label: 'Gerar relatório' },
+  // Itens
+  { value: 'create_item', label: 'Criar item' },
+  { value: 'update_item', label: 'Atualizar item' },
+  { value: 'delete_item', label: 'Excluir item' },
+  // Fontes
+  { value: 'add_fonte', label: 'Adicionar fonte PNCP' },
+  { value: 'add_fonte_cotacao_direta', label: 'Adicionar cotação direta' },
+  { value: 'remove_fonte', label: 'Remover fonte' },
+  { value: 'ignore_fonte', label: 'Ignorar fonte (outlier)' },
+  { value: 'restore_fonte', label: 'Restaurar fonte' },
 ];
 
 function formatDateTime(iso: string): string {
@@ -54,6 +69,63 @@ function formatDateTime(iso: string): string {
   } catch {
     return iso;
   }
+}
+
+function getAcaoLabel(acao: string): string {
+  const labels: Record<string, string> = {
+    // Autenticação
+    login: 'Login',
+    logout: 'Logout',
+    password_reset: 'Redefinir senha',
+    password_reset_request: 'Solicitar redefinição',
+    password_reset_admin: 'Redefinir senha (admin)',
+    password_change: 'Alterar senha',
+    // CRUD genérico
+    create: 'Criar',
+    update: 'Atualizar',
+    delete: 'Excluir',
+    activate: 'Ativar',
+    deactivate: 'Desativar',
+    // Projetos
+    finalize: 'Finalizar projeto',
+    generate_report: 'Gerar relatório',
+    // Itens
+    create_item: 'Criar item',
+    update_item: 'Atualizar item',
+    delete_item: 'Excluir item',
+    // Fontes
+    add_fonte: 'Adicionar fonte PNCP',
+    add_fonte_cotacao_direta: 'Adicionar cotação direta',
+    remove_fonte: 'Remover fonte',
+    ignore_fonte: 'Ignorar fonte',
+    restore_fonte: 'Restaurar fonte',
+  };
+  return labels[acao] || acao;
+}
+
+function getAcaoBadgeStyle(acao: string): string {
+  // Ações críticas (compliance)
+  if (['finalize', 'generate_report', 'ignore_fonte'].includes(acao)) {
+    return 'bg-amber-500/10 text-amber-700 dark:text-amber-400 font-semibold border border-amber-500/20';
+  }
+  // Ações destrutivas
+  if (['delete', 'delete_item', 'remove_fonte', 'deactivate'].includes(acao)) {
+    return 'bg-destructive/10 text-destructive border border-destructive/20';
+  }
+  // Ações de criação
+  if (['create', 'create_item', 'add_fonte', 'add_fonte_cotacao_direta'].includes(acao)) {
+    return 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20';
+  }
+  // Ações de atualização
+  if (['update', 'update_item', 'restore_fonte'].includes(acao)) {
+    return 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20';
+  }
+  // Autenticação
+  if (['login', 'logout'].includes(acao)) {
+    return 'bg-slate-500/10 text-slate-700 dark:text-slate-400 border border-slate-500/20';
+  }
+  // Outras ações
+  return 'bg-muted text-muted-foreground border border-muted';
 }
 
 export function AuditLogsTable() {
@@ -328,16 +400,13 @@ export function AuditLogsTable() {
                     <TableCell>{log.tenantNome ?? '—'}</TableCell>
                     <TableCell>
                       <span className={cn(
-                        'rounded px-2 py-0.5 text-xs font-medium',
-                        log.acao === 'delete' && 'bg-destructive/10 text-destructive',
-                        log.acao === 'create' && 'bg-success/10 text-success',
-                        log.acao === 'update' && 'bg-primary/10 text-primary',
-                        !['delete','create','update'].includes(log.acao) && 'bg-muted text-muted-foreground'
+                        'rounded px-2 py-0.5 text-xs font-medium whitespace-nowrap',
+                        getAcaoBadgeStyle(log.acao)
                       )}>
-                        {log.acao}
+                        {getAcaoLabel(log.acao)}
                       </span>
                     </TableCell>
-                    <TableCell>{log.entidade}</TableCell>
+                    <TableCell className="font-mono text-xs text-muted-foreground">{log.entidade}</TableCell>
                     <TableCell className="text-right font-mono text-xs text-muted-foreground">
                       {log.ip ?? '—'}
                     </TableCell>

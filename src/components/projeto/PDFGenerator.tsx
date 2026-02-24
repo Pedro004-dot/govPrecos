@@ -4,13 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
   Download,
   Loader2,
   CheckCircle,
@@ -18,14 +11,71 @@ import {
   ExternalLink,
   FileCheck,
   FileSpreadsheet,
+  FileText,
+  Shield,
+  Sparkles,
 } from 'lucide-react';
 import { projetosService, type Projeto } from '@/services/projetos';
+import './PDFGenerator.css';
 
 type TipoRelatorio = 'completo' | 'resumido' | 'xlsx';
 
 interface PDFGeneratorProps {
   projeto: Projeto;
 }
+
+interface ReportTypeOption {
+  id: TipoRelatorio;
+  icon: typeof FileCheck;
+  title: string;
+  description: string;
+  badge?: string;
+  features: string[];
+}
+
+const reportTypes: ReportTypeOption[] = [
+  {
+    id: 'completo',
+    icon: FileText,
+    title: 'Relatório Completo',
+    description: 'Documentação detalhada com todas as fontes e justificativas',
+    badge: 'Recomendado',
+    features: [
+      'Capa institucional completa',
+      'Metodologia Lei 14.133/2021',
+      'Tabelas detalhadas com fontes PNCP',
+      'Links clicáveis para verificação',
+      'Cálculos e justificativas',
+      'QR Code e seção de assinatura',
+    ],
+  },
+  {
+    id: 'resumido',
+    icon: FileCheck,
+    title: 'Relatório Resumido',
+    description: 'Versão compacta com informações essenciais',
+    features: [
+      'Capa com dados do projeto',
+      'Resumo executivo',
+      'Top 3 fontes por item',
+      'Resumo financeiro',
+      'QR Code de acesso',
+      'Área para assinatura',
+    ],
+  },
+  {
+    id: 'xlsx',
+    icon: FileSpreadsheet,
+    title: 'Planilha Excel',
+    description: 'Dados estruturados para análise e processamento',
+    features: [
+      'Múltiplas abas organizadas',
+      'Dados em formato de tabela',
+      'Cálculos prontos para uso',
+      'Fácil importação e análise',
+    ],
+  },
+];
 
 export function PDFGenerator({ projeto }: PDFGeneratorProps) {
   const [generating, setGenerating] = useState(false);
@@ -39,24 +89,17 @@ export function PDFGenerator({ projeto }: PDFGeneratorProps) {
     setError(null);
 
     try {
-      // Generate report and get blob
       const blob = await projetosService.gerarRelatorio(projeto.id, tipoRelatorio);
-
-      // Create URL for the blob
       const url = window.URL.createObjectURL(blob);
-
-      // Determine file extension based on type
       const extensao = tipoRelatorio === 'xlsx' ? 'xlsx' : 'pdf';
       const nomeArquivo = `Relatorio_${tipoRelatorio}_${projeto.nome.replace(/\s+/g, '_')}_${
         new Date().toISOString().split('T')[0]
       }.${extensao}`;
 
       if (preview) {
-        // Open in new tab for preview
         window.open(url, '_blank');
         setPreviewUrl(url);
       } else {
-        // Download directly
         const link = document.createElement('a');
         link.href = url;
         link.download = nomeArquivo;
@@ -67,7 +110,6 @@ export function PDFGenerator({ projeto }: PDFGeneratorProps) {
 
       setLastGenerated(new Date());
 
-      // Don't revoke URL immediately if preview
       if (!preview) {
         setTimeout(() => window.URL.revokeObjectURL(url), 100);
       }
@@ -83,249 +125,173 @@ export function PDFGenerator({ projeto }: PDFGeneratorProps) {
     }
   };
 
+  const selectedReport = reportTypes.find((r) => r.id === tipoRelatorio)!;
+
   return (
-    <Card className="border-2 border-success/30 bg-success/10">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <FileCheck className="w-5 h-5 text-success" />
-            <CardTitle>Relatório de Conformidade</CardTitle>
+    <div className="pdf-generator-container">
+      {/* Header Section */}
+      <div className="pdf-generator-header">
+        <div className="header-content">
+          <div className="header-icon">
+            <Shield className="icon-shield" />
+            <Sparkles className="icon-sparkle" />
           </div>
-          <Badge className="gap-1 bg-success text-success-foreground">
-            <CheckCircle className="w-3 h-3" />
-            Projeto Finalizado
-          </Badge>
+          <div className="header-text">
+            <h2 className="header-title">Relatório de Conformidade</h2>
+            <p className="header-subtitle">
+              Gerar documentação oficial conforme Lei 14.133/2021
+            </p>
+          </div>
         </div>
-        <CardDescription>
-          Gerar documentação oficial conforme Lei 14.133/2021
-        </CardDescription>
-      </CardHeader>
+        <Badge className="status-badge">
+          <CheckCircle className="w-3.5 h-3.5" />
+          Projeto Finalizado
+        </Badge>
+      </div>
 
-      <CardContent className="space-y-4">
-        {/* Tipo de Relatório Selector */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Tipo de Relatório</label>
-          <Select
-            value={tipoRelatorio}
-            onValueChange={(value) => setTipoRelatorio(value as TipoRelatorio)}
-            disabled={generating}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Selecione o tipo de relatório" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="completo">
-                <span className="flex items-center gap-2">
-                  <FileCheck className="w-4 h-4" />
-                  <span>PDF Completo</span>
-                </span>
-              </SelectItem>
-              <SelectItem value="resumido">
-                <span className="flex items-center gap-2">
-                  <FileCheck className="w-4 h-4" />
-                  <span>PDF Resumido</span>
-                </span>
-              </SelectItem>
-              <SelectItem value="xlsx">
-                <span className="flex items-center gap-2">
-                  <FileSpreadsheet className="w-4 h-4" />
-                  <span>Planilha Excel (XLSX)</span>
-                </span>
-              </SelectItem>
-            </SelectContent>
-          </Select>
+      {/* Report Type Selection */}
+      <div className="report-types-section">
+        <h3 className="section-title">Selecione o tipo de relatório</h3>
+        <div className="report-types-grid">
+          {reportTypes.map((type) => {
+            const Icon = type.icon;
+            const isSelected = tipoRelatorio === type.id;
+
+            return (
+              <button
+                key={type.id}
+                onClick={() => setTipoRelatorio(type.id)}
+                disabled={generating}
+                className={`report-type-card ${isSelected ? 'selected' : ''} ${
+                  generating ? 'disabled' : ''
+                }`}
+              >
+                {type.badge && <span className="report-badge">{type.badge}</span>}
+
+                <div className="report-icon-wrapper">
+                  <Icon className="report-icon" />
+                </div>
+
+                <div className="report-info">
+                  <h4 className="report-title">{type.title}</h4>
+                  <p className="report-description">{type.description}</p>
+                </div>
+
+                <ul className="report-features">
+                  {type.features.map((feature, idx) => (
+                    <li key={idx} className="feature-item">
+                      <span className="feature-dot" />
+                      <span className="feature-text">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="selection-indicator">
+                  <div className="indicator-dot" />
+                </div>
+              </button>
+            );
+          })}
         </div>
+      </div>
 
-        {/* Report Contents Info */}
-        <div className="p-4 border rounded-lg bg-background">
-          <h4 className="font-semibold text-sm mb-3">
-            {tipoRelatorio === 'xlsx' ? 'Conteúdo da Planilha:' : 'Conteúdo do Relatório PDF:'}
-          </h4>
-          {tipoRelatorio === 'xlsx' ? (
-            <div className="grid grid-cols-1 gap-2 text-xs text-muted-foreground">
-              <div className="flex items-start gap-2">
-                <span className="text-primary">•</span>
-                <span>Abas: Resumo, Itens, Fontes e Estatísticas</span>
+      {/* Status Messages */}
+      {lastGenerated && !generating && !error && (
+        <div className="status-message success">
+          <CheckCircle className="status-icon" />
+          <div className="status-content">
+            <strong className="status-title">Relatório gerado com sucesso!</strong>
+            <span className="status-time">
+              Último download:{' '}
+              {lastGenerated.toLocaleString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {error && (
+        <div className="status-message error">
+          <AlertTriangle className="status-icon" />
+          <div className="status-content">
+            <strong className="status-title">Erro ao gerar relatório</strong>
+            <p className="status-description">{error}</p>
+            <span className="status-hint">
+              Se o erro persistir, verifique se todos os itens possuem fontes válidas.
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Action Buttons */}
+      <div className="action-buttons">
+        <Button
+          onClick={() => handleGenerate(false)}
+          disabled={generating}
+          size="lg"
+          className="action-button primary"
+        >
+          {generating ? (
+            <>
+              <Loader2 className="button-icon animate-spin" />
+              <div className="button-content">
+                <span className="button-title">
+                  Gerando {tipoRelatorio === 'xlsx' ? 'planilha' : 'relatório'}...
+                </span>
+                <span className="button-subtitle">Processando dados</span>
               </div>
-              <div className="flex items-start gap-2">
-                <span className="text-primary">•</span>
-                <span>Dados organizados em tabelas para análise</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-primary">•</span>
-                <span>Valores e cálculos prontos para uso</span>
-              </div>
-            </div>
-          ) : tipoRelatorio === 'resumido' ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-muted-foreground">
-              <div className="flex items-start gap-2">
-                <span className="text-primary">•</span>
-                <span>Capa com dados do projeto</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-primary">•</span>
-                <span>Resumo executivo</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-primary">•</span>
-                <span>Itens com top 3 fontes principais</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-primary">•</span>
-                <span>Resumo financeiro</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-primary">•</span>
-                <span>QR Code para acesso online</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-primary">•</span>
-                <span>Seção para assinatura</span>
-              </div>
-            </div>
+            </>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-muted-foreground">
-              <div className="flex items-start gap-2">
-                <span className="text-primary">•</span>
-                <span>Capa com dados do projeto e identificação do órgão</span>
+            <>
+              {tipoRelatorio === 'xlsx' ? (
+                <FileSpreadsheet className="button-icon" />
+              ) : (
+                <Download className="button-icon" />
+              )}
+              <div className="button-content">
+                <span className="button-title">
+                  Baixar {tipoRelatorio === 'xlsx' ? 'Planilha' : 'Relatório'}
+                </span>
+                <span className="button-subtitle">Download automático</span>
               </div>
-              <div className="flex items-start gap-2">
-                <span className="text-primary">•</span>
-                <span>Metodologia de pesquisa (Lei 14.133/2021)</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-primary">•</span>
-                <span>Tabelas detalhadas por item com fontes PNCP</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-primary">•</span>
-                <span>Links clicáveis para verificação no PNCP</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-primary">•</span>
-                <span>Cálculo de mediana e valores totais</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-primary">•</span>
-                <span>Justificativas de outliers (se aplicável)</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-primary">•</span>
-                <span>Resumo financeiro do projeto</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-primary">•</span>
-                <span>Extrato de fontes utilizadas</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-primary">•</span>
-                <span>QR Code para acesso online</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="text-primary">•</span>
-                <span>Seção para assinatura do responsável</span>
-              </div>
-            </div>
+            </>
           )}
-        </div>
+        </Button>
 
-        {/* Last Generated Info */}
-        {lastGenerated && !generating && (
-          <Alert className="border-success/30 bg-success/10">
-            <CheckCircle className="h-4 w-4 text-success" />
-            <AlertDescription className="text-sm">
-              <strong>Relatório gerado com sucesso!</strong>
-              <br />
-              <span className="text-xs text-muted-foreground">
-                Último download:{' '}
-                {lastGenerated.toLocaleString('pt-BR', {
-                  day: '2-digit',
-                  month: '2-digit',
-                  year: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </span>
-            </AlertDescription>
-          </Alert>
-        )}
+        <Button
+          onClick={() => handleGenerate(true)}
+          disabled={generating || tipoRelatorio === 'xlsx'}
+          variant="outline"
+          size="lg"
+          className="action-button secondary"
+        >
+          <ExternalLink className="button-icon" />
+          <div className="button-content">
+            <span className="button-title">Visualizar Relatório</span>
+            <span className="button-subtitle">
+              {tipoRelatorio === 'xlsx' ? 'Não disponível para Excel' : 'Abrir em nova aba'}
+            </span>
+          </div>
+        </Button>
+      </div>
 
-        {/* Error Message */}
-        {error && (
-          <Alert variant="destructive">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription className="text-sm">
-              <strong>Erro ao gerar relatório:</strong>
-              <br />
-              {error}
-              <br />
-              <span className="text-xs mt-2 block">
-                Se o erro persistir, verifique se todos os itens possuem fontes válidas e tente
-                novamente.
-              </span>
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {/* Generation Buttons */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <Button
-            onClick={() => handleGenerate(false)}
-            disabled={generating}
-            size="lg"
-            className="gap-2"
-          >
-            {generating ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                <div className="text-left flex-1">
-                  <div className="font-semibold">
-                    Gerando {tipoRelatorio === 'xlsx' ? 'Planilha' : 'PDF'}...
-                  </div>
-                  <div className="text-xs opacity-90">Processando dados</div>
-                </div>
-              </>
-            ) : (
-              <>
-                {tipoRelatorio === 'xlsx' ? (
-                  <FileSpreadsheet className="w-5 h-5" />
-                ) : (
-                  <Download className="w-5 h-5" />
-                )}
-                <div className="text-left flex-1">
-                  <div className="font-semibold">
-                    Baixar {tipoRelatorio === 'xlsx' ? 'Planilha' : 'Relatório'}
-                  </div>
-                  <div className="text-xs opacity-90">Download automático</div>
-                </div>
-              </>
-            )}
-          </Button>
-
-          <Button
-            onClick={() => handleGenerate(true)}
-            disabled={generating}
-            variant="outline"
-            size="lg"
-            className="gap-2"
-          >
-            <ExternalLink className="w-5 h-5" />
-            <div className="text-left flex-1">
-              <div className="font-semibold">Visualizar PDF</div>
-              <div className="text-xs text-muted-foreground">Abrir em nova aba</div>
-            </div>
-          </Button>
-        </div>
-
-        {/* Legal Notice */}
-        <div className="p-3 border rounded-lg bg-info/10 border-info/30">
-          <p className="text-xs text-info">
-            <strong>📋 Atenção:</strong> Este relatório deve ser arquivado junto ao processo
-            licitatório para fins de auditoria. Verifique se todos os dados estão corretos antes
-            de assinar e anexar ao processo administrativo.
+      {/* Legal Notice */}
+      <div className="legal-notice">
+        <div className="notice-icon">📋</div>
+        <div className="notice-content">
+          <strong className="notice-title">Atenção Legal</strong>
+          <p className="notice-text">
+            Este relatório deve ser arquivado junto ao processo licitatório para fins de
+            auditoria. Verifique se todos os dados estão corretos antes de assinar e anexar ao
+            processo administrativo.
           </p>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

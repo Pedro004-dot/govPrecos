@@ -39,7 +39,7 @@ export function Dashboard() {
     const s = status?.toLowerCase() ?? '';
     if (s === 'finalizado') return 'Finalizada';
     if (s === 'em_andamento' || s === 'em andamento') return 'Em andamento';
-    if (s === 'rascunho') return 'Rascunho';
+    if (s === 'rascunho') return 'Em andamento';
     if (s === 'cancelado') return 'Cancelada';
     return status;
   };
@@ -48,19 +48,21 @@ export function Dashboard() {
     const s = status?.toLowerCase() ?? '';
     if (s === 'finalizado') return 'text-success';
     if (s === 'em_andamento' || s === 'em andamento') return 'text-warning';
+    if (s === 'rascunho') return 'text-warning';
     return 'text-muted-foreground';
   };
 
   const emAndamento = projetos.filter((p) => {
     const s = p.status?.toLowerCase() ?? '';
-    return s === 'em_andamento' || s === 'em andamento';
+    // Regra nova: "andamento" = tudo que não está finalizado nem cancelado
+    return s !== 'finalizado' && s !== 'cancelado';
   }).length;
 
   const finalizados = projetos.filter(
     (p) => p.status?.toLowerCase() === 'finalizado'
   ).length;
 
-  const ultimasCotacoes = projetos.slice(0, 3);
+  const ultimasCotacoes = projetos;
   const hasCotacoes = ultimasCotacoes.length > 0;
 
   const hoje = new Date().toLocaleDateString('pt-BR', {

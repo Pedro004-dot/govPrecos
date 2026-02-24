@@ -35,7 +35,7 @@ import {
   type ProjetoItem,
 } from '@/services/projetos';
 import { ExcelUploadSheet } from '@/components/excel/ExcelUploadSheet';
-import { PDFGenerator } from '@/components/projeto/PDFGenerator';
+import { PDFGeneratorDialog } from '@/components/projeto/PDFGeneratorDialog';
 import { AdicionarItemSheet } from '@/components/projeto/AdicionarItemSheet';
 import { ItemSuccessDialog } from '@/components/projeto/ItemSuccessDialog';
 
@@ -58,6 +58,9 @@ export function ProjectDetails() {
   // Success dialog state
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [lastCreatedItem, setLastCreatedItem] = useState<{ id: string; nome: string } | null>(null);
+
+  // PDF Generator dialog state
+  const [pdfDialogOpen, setPdfDialogOpen] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -126,9 +129,7 @@ export function ProjectDetails() {
     if (!projeto) return;
 
     if (projeto.status === 'finalizado') {
-      setTimeout(() => {
-        document.getElementById('pdf-generator')?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
+      setPdfDialogOpen(true);
     } else {
       alert('Finalize a cotação para gerar o relatório');
     }
@@ -582,11 +583,13 @@ export function ProjectDetails() {
         )}
       </div>
 
-      {/* PDF Generator (quando finalizado) */}
+      {/* PDF Generator Dialog */}
       {projeto.status === 'finalizado' && (
-        <div id="pdf-generator" className="animate-dash-in" style={{ animationDelay: '160ms' }}>
-          <PDFGenerator projeto={projeto} />
-        </div>
+        <PDFGeneratorDialog
+          projeto={projeto}
+          open={pdfDialogOpen}
+          onOpenChange={setPdfDialogOpen}
+        />
       )}
     </div>
   );

@@ -139,12 +139,20 @@ export function CardFonteExpandivel({
             {/* Descrição */}
             <div className="flex-1 min-w-0">
               <p className="font-medium text-foreground leading-snug line-clamp-2">
-                {fonte.descricaoPNCP}
+                {fonte.tipoOrigem === 'cotacao_direta'
+                  ? fonte.fornecedorNome || 'Cotação direta'
+                  : fonte.descricaoPNCP}
               </p>
-              {fonte.razaoSocialOrgao && (
+              {fonte.tipoOrigem === 'cotacao_direta' ? (
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  {fonte.razaoSocialOrgao}
+                  {fonte.fornecedorCidade || 'Cotação direta registrada manualmente'}
                 </p>
+              ) : (
+                fonte.razaoSocialOrgao && (
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {fonte.razaoSocialOrgao}
+                  </p>
+                )
               )}
             </div>
 
@@ -161,9 +169,16 @@ export function CardFonteExpandivel({
               <span className="text-muted-foreground w-20 text-right">
                 {formatDate(fonte.dataLicitacao)}
               </span>
-              <span className="font-semibold text-foreground tabular-nums min-w-[5rem] text-right">
-                {formatCurrency(fonte.valorUnitario)}
-              </span>
+              <div className="flex flex-col items-end leading-tight">
+                {fonte.tipoOrigem === 'cotacao_direta' && (
+                  <Badge className="bg-amber-100 text-amber-800 border border-amber-200 text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wide">
+                    Cotação direta
+                  </Badge>
+                )}
+                <span className="font-semibold text-foreground tabular-nums min-w-[5rem] text-right">
+                  {formatCurrency(fonte.valorUnitario)}
+                </span>
+              </div>
             </div>
 
             {/* Botão remover */}

@@ -68,11 +68,15 @@ export interface Fornecedor {
 export interface ItemFonte {
   id: string;
   projetoItemId: string;
-  itemLicitacaoId: string;
+  itemLicitacaoId?: string | null;
   valorUnitario: number;
   ignoradoCalculo: boolean;
   justificativaExclusao?: string;
   dataLicitacao?: string;
+  tipoOrigem?: 'pncp' | 'cotacao_direta';
+  fornecedorNome?: string;
+  fornecedorCidade?: string;
+  dataCotacao?: string;
   criadoEm: string;
   atualizadoEm: string;
 }
@@ -291,6 +295,17 @@ export const projetosService = {
     itemLicitacaoId: string
   ): Promise<ApiResponse<{ fonte: ItemFonte; medianaAtualizada: number | null }>> => {
     const response = await api.post(`/itens/${itemId}/fontes`, { itemLicitacaoId });
+    return response.data;
+  },
+
+  /**
+   * Add direct quotation source to item (manual supplier)
+   */
+  adicionarCotacaoDireta: async (
+    itemId: string,
+    data: { fornecedorNome: string; fornecedorCidade?: string; valorUnitario: number }
+  ): Promise<ApiResponse<{ fonte: ItemFonte; medianaAtualizada: number | null }>> => {
+    const response = await api.post(`/itens/${itemId}/fontes-cotacao-direta`, data);
     return response.data;
   },
 

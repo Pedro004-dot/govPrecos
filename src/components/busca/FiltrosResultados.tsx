@@ -15,11 +15,14 @@ import { cn } from '@/lib/utils';
 
 export type OrdenacaoTipo = 'relevancia' | 'valor_asc' | 'valor_desc' | 'distancia_asc' | 'distancia_desc';
 
+type PeriodoMeses = 'todos' | 6 | 3 | 1;
+
 export interface FiltrosState {
   unidadesSelecionadas: Set<string>;
   valorMin: number | null;
   valorMax: number | null;
   ordenacao: OrdenacaoTipo;
+  periodoMeses: PeriodoMeses;
 }
 
 interface FiltrosResultadosProps {
@@ -41,6 +44,7 @@ export function FiltrosResultados({
     valorMin: null,
     valorMax: null,
     ordenacao: 'relevancia',
+    periodoMeses: 'todos',
   });
 
   // Extrai unidades únicas dos itens (exatamente como vieram)
@@ -92,6 +96,21 @@ export function FiltrosResultados({
       resultado = resultado.filter(
         (item) => item.valorUnitarioEstimado != null && item.valorUnitarioEstimado <= filtros.valorMax!
       );
+    }
+
+    // Filtro por período (data da licitação)
+    if (filtros.periodoMeses !== 'todos') {
+      const meses = filtros.periodoMeses;
+      const hoje = new Date();
+      const dataMin = new Date(hoje);
+      dataMin.setMonth(hoje.getMonth() - meses);
+
+      resultado = resultado.filter((item) => {
+        if (!item.dataLicitacao) return false;
+        const data = new Date(item.dataLicitacao);
+        if (Number.isNaN(data.getTime())) return false;
+        return data >= dataMin;
+      });
     }
 
     // Ordenação
@@ -153,7 +172,8 @@ export function FiltrosResultados({
     filtros.unidadesSelecionadas.size > 0 ||
     filtros.valorMin != null ||
     filtros.valorMax != null ||
-    filtros.ordenacao !== 'relevancia';
+    filtros.ordenacao !== 'relevancia' ||
+    filtros.periodoMeses !== 'todos';
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
@@ -202,6 +222,35 @@ export function FiltrosResultados({
                 <SelectItem value="valor_desc">Maior valor</SelectItem>
                 {temFiltroRegiao && <SelectItem value="distancia_asc">Mais próximo</SelectItem>}
                 {temFiltroRegiao && <SelectItem value="distancia_desc">Mais distante</SelectItem>}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Filtro por período (data da licitação) */}
+          <div className="space-y-2">
+            <label className="text-xs font-medium text-muted-foreground">
+              Período da licitação
+              <span className="text-muted-foreground/50 ml-2">
+                (a partir de hoje)
+              </span>
+            </label>
+            <Select
+              value={String(filtros.periodoMeses)}
+              onValueChange={(v) =>
+                setFiltros((prev) => ({
+                  ...prev,
+                  periodoMeses: v === 'todos' ? 'todos' : (Number(v) as PeriodoMeses),
+                }))
+              }
+            >
+              <SelectTrigger className="h-9 bg-background/50 border-border/60 max-w-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="todos">Últimos 24 meses (todos)</SelectItem>
+                <SelectItem value="6">Últimos 6 meses</SelectItem>
+                <SelectItem value="3">Últimos 3 meses</SelectItem>
+                <SelectItem value="1">Último mês</SelectItem>
               </SelectContent>
             </Select>
           </div>

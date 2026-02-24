@@ -259,7 +259,7 @@ export function Relatorios() {
                           ) : (
                             <FileText className="w-4 h-4" />
                           )}
-                          PDF Completo
+                          Relatório Completo
                         </Button>
                         <Button
                           variant="outline"

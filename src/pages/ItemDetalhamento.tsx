@@ -17,6 +17,7 @@ import {
   Plus,
   BarChart3,
   FileText,
+  CheckCircle,
 } from 'lucide-react';
 import {
   projetosService,
@@ -139,6 +140,10 @@ export function ItemDetalhamento() {
   const [loading, setLoading] = useState(true);
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [secaoAtiva, setSecaoAtiva] = useState<SecaoFonte>('precos_governamentais');
+  const [cotacaoDiretaNome, setCotacaoDiretaNome] = useState('');
+  const [cotacaoDiretaCidade, setCotacaoDiretaCidade] = useState('');
+  const [cotacaoDiretaValor, setCotacaoDiretaValor] = useState('');
+  const [savingCotacaoDireta, setSavingCotacaoDireta] = useState(false);
 
   const currentIndex = useMemo(
     () => (itemId ? itens.findIndex((i) => i.id === itemId) : -1),
@@ -197,6 +202,22 @@ export function ItemDetalhamento() {
     if (nextItem && projetoId) navigate(`/projeto/${projetoId}/item/${nextItem.id}`);
   };
 
+  const handleFinalizarProjeto = async () => {
+    if (!projetoId || !projeto) return;
+
+    try {
+      const response = await projetosService.finalizar(projetoId);
+      if (response.success) {
+        setProjeto(response.projeto);
+        alert('✅ Projeto finalizado com sucesso! Agora você pode gerar o relatório.');
+      }
+    } catch (error: any) {
+      console.error('Failed to finalize project:', error);
+      const errorMessage = error?.response?.data?.message || error.message || 'Erro ao finalizar projeto';
+      alert('❌ Erro: ' + errorMessage);
+    }
+  };
+
   const handleRemoverFonte = async (fonteId: string) => {
     if (!itemId || removingId) return;
     setRemovingId(fonteId);
@@ -212,6 +233,48 @@ export function ItemDetalhamento() {
       alert('Erro ao remover fonte.');
     } finally {
       setRemovingId(null);
+    }
+  };
+
+  const handleAdicionarCotacaoDireta = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!itemId || !cotacaoDiretaNome || !cotacaoDiretaValor) return;
+
+    const valor = parseFloat(cotacaoDiretaValor.replace(',', '.'));
+    if (Number.isNaN(valor) || valor <= 0) {
+      alert('Informe um valor unitário válido (maior que zero).');
+      return;
+    }
+
+    try {
+      setSavingCotacaoDireta(true);
+      const res = await projetosService.adicionarCotacaoDireta(itemId, {
+        fornecedorNome: cotacaoDiretaNome.trim(),
+        fornecedorCidade: cotacaoDiretaCidade.trim() || undefined,
+        valorUnitario: valor,
+      });
+
+      if (!res.success) {
+        alert(res.message || 'Erro ao adicionar cotação direta.');
+        return;
+      }
+
+      // Recarregar item/fontes para refletir nova mediana e lista
+      const reload = await projetosService.buscarItem(itemId);
+      if (reload.success) {
+        if (reload.item) setItem(reload.item);
+        setFontes(reload.fontes || []);
+      }
+
+      setCotacaoDiretaNome('');
+      setCotacaoDiretaCidade('');
+      setCotacaoDiretaValor('');
+    } catch (error: any) {
+      console.error(error);
+      const msg = error?.response?.data?.message || error.message || 'Erro ao adicionar cotação direta.';
+      alert(msg);
+    } finally {
+      setSavingCotacaoDireta(false);
     }
   };
 
@@ -325,12 +388,15 @@ export function ItemDetalhamento() {
             </button>
           ))}
           <div className="mt-auto p-3 border-t border-border">
-            <Button
-              className="w-full"
-              onClick={() => navigate(`/projeto/${projetoId}`)}
-            >
-              Gerar relatório
-            </Button>
+            {projeto?.status !== 'finalizado' && (
+              <Button
+                className="w-full h-9 gap-1.5 px-4 bg-success text-success-foreground hover:bg-success/90"
+                onClick={handleFinalizarProjeto}
+              >
+                <CheckCircle className="w-4 h-4" />
+                Finalizar
+              </Button>
+            )}
           </div>
         </aside>
 
@@ -440,13 +506,120 @@ export function ItemDetalhamento() {
           )}
 
           {secaoAtiva === 'cotacao_direta' && (
-            <Card>
-              <CardContent className="py-12 text-center text-muted-foreground">
-                <Plus className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p className="font-medium">Cotação direta</p>
-                <p className="text-sm mt-1">Em breve: incluir preço por cotação direta (fornecedor, valor, documento).</p>
-              </CardContent>
-            </Card>
+            <div className="space-y-6">
+              <Card>
+                <CardContent className="p-4">
+                  <h2 className="font-semibold text-lg mb-2">Nova cotação direta</h2>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Use esta seção para registrar uma proposta direta de um fornecedor conhecido (nome, cidade e valor unitário).
+                  </p>
+                  <form onSubmit={handleAdicionarCotacaoDireta} className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-medium text-muted-foreground">Nome do fornecedor</label>
+                      <input
+                        type="text"
+                        className="border border-input rounded-md px-3 py-2 text-sm bg-background"
+                        value={cotacaoDiretaNome}
+                        onChange={(e) => setCotacaoDiretaNome(e.target.value)}
+                        placeholder="Ex: Papelaria Exemplo Ltda"
+                        required
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-medium text-muted-foreground">Cidade</label>
+                      <input
+                        type="text"
+                        className="border border-input rounded-md px-3 py-2 text-sm bg-background"
+                        value={cotacaoDiretaCidade}
+                        onChange={(e) => setCotacaoDiretaCidade(e.target.value)}
+                        placeholder="Ex: Belo Horizonte / MG"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs font-medium text-muted-foreground">Valor unitário (R$)</label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          className="flex-1 border border-input rounded-md px-3 py-2 text-sm bg-background"
+                          value={cotacaoDiretaValor}
+                          onChange={(e) => setCotacaoDiretaValor(e.target.value)}
+                          placeholder="Ex: 12,34"
+                          required
+                        />
+                        <Button
+                          type="submit"
+                          className="shrink-0"
+                          disabled={savingCotacaoDireta}
+                        >
+                          {savingCotacaoDireta ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <>
+                              <Plus className="w-4 h-4 mr-1" />
+                              Adicionar
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <div className="flex items-center justify-between p-4 border-b">
+                  <div>
+                    <h2 className="font-semibold text-lg">Cotações diretas registradas</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Estas fontes entram no cálculo da mediana junto com os preços governamentais.
+                    </p>
+                  </div>
+                </div>
+                {fontes.filter((f) => f.tipoOrigem === 'cotacao_direta').length === 0 ? (
+                  <div className="p-8 text-center text-muted-foreground text-sm">
+                    Nenhuma cotação direta registrada para este item.
+                  </div>
+                ) : (
+                  <div className="p-4 space-y-3">
+                    {fontes
+                      .filter((f) => f.tipoOrigem === 'cotacao_direta')
+                      .map((fonte) => (
+                        <div
+                          key={fonte.id}
+                          className="flex items-center justify-between border border-border rounded-md px-4 py-3 bg-card"
+                        >
+                          <div className="flex flex-col">
+                            <span className="font-medium text-sm">
+                              {fonte.fornecedorNome}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {fonte.fornecedorCidade || 'Cidade não informada'} • Cotação direta
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <span className="font-semibold text-sm">
+                              {formatCurrency(fonte.valorUnitario)}
+                            </span>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-destructive hover:text-destructive"
+                              onClick={() => handleRemoverFonte(fonte.id)}
+                              disabled={removingId === fonte.id}
+                            >
+                              {removingId === fonte.id ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                <Plus className="w-4 h-4 rotate-45" />
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </Card>
+            </div>
           )}
 
           {secaoAtiva === 'graficos' && (
