@@ -389,27 +389,27 @@ export function Search() {
                   <TableHeader>
                     <TableRow className="border-border/60 hover:bg-transparent">
                       <TableHead className="w-10 bg-card/80" />
-                      <TableHead className="bg-card/80 w-[42%]">
+                      <TableHead className="bg-card/80 w-[35%]">
                         <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground/50">
                           Descrição
                         </span>
                       </TableHead>
-                      <TableHead className="text-right bg-card/80 w-[14%]">
+                      <TableHead className="text-right bg-card/80 w-[12%]">
                         <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground/50">
                           Qtd.
                         </span>
                       </TableHead>
-                      <TableHead className="w-14 bg-card/80">
+                      <TableHead className="w-[18%] bg-card/80">
                         <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground/50">
-                          UF
+                          Local
                         </span>
                       </TableHead>
-                      <TableHead className="bg-card/80 w-[11%]">
+                      <TableHead className="bg-card/80 w-[10%]">
                         <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground/50">
                           {cidadeRaio.municipio ? 'Dist.' : 'Data'}
                         </span>
                       </TableHead>
-                      <TableHead className="text-right bg-card/80 w-[16%]">
+                      <TableHead className="text-right bg-card/80 w-[15%]">
                         <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground/50">
                           Valor Unit.
                         </span>
@@ -463,11 +463,20 @@ export function Search() {
                             </span>
                           </TableCell>
 
-                          <TableCell>
-                            {item.ufSigla ? (
-                              <span className="font-mono text-[11px] font-medium text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded">
-                                {item.ufSigla}
-                              </span>
+                          <TableCell className="overflow-hidden max-w-0">
+                            {item.municipioNome || item.ufSigla ? (
+                              <div className="flex flex-col gap-0.5">
+                                {item.municipioNome && (
+                                  <span className="text-xs text-foreground/70 truncate">
+                                    {item.municipioNome}
+                                  </span>
+                                )}
+                                {item.ufSigla && (
+                                  <span className="font-mono text-[11px] font-medium text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded inline-block w-fit">
+                                    {item.ufSigla}
+                                  </span>
+                                )}
+                              </div>
                             ) : (
                               <span className="font-mono text-xs text-muted-foreground/30">—</span>
                             )}

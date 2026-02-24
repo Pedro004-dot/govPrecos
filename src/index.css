@@ -65,10 +65,10 @@
   --sidebar-border: 222 38% 22%;
   --sidebar-ring: 217 100% 65%;
 
-  /* Dark sidebar tokens */
+  /* Dark sidebar tokens — textos e ícones próximos do branco */
   --sidebar-dark: 222 42% 15%;
-  --sidebar-dark-foreground: 220 18% 82%;
-  --sidebar-dark-muted: 220 15% 48%;
+  --sidebar-dark-foreground: 220 8% 96%;
+  --sidebar-dark-muted: 220 10% 90%;
   --sidebar-dark-border: 222 38% 22%;
   --sidebar-dark-hover: 222 38% 22%;
   --sidebar-dark-active: 217 100% 65%;
@@ -122,8 +122,8 @@
   --sidebar-border: 222 42% 10%;
   --sidebar-ring: 217 100% 65%;
   --sidebar-dark: 222 55% 3%;
-  --sidebar-dark-foreground: 220 20% 78%;
-  --sidebar-dark-muted: 220 15% 40%;
+  --sidebar-dark-foreground: 220 8% 96%;
+  --sidebar-dark-muted: 220 10% 90%;
   --sidebar-dark-border: 222 42% 10%;
   --sidebar-dark-hover: 222 45% 10%;
   --sidebar-dark-active: 217 100% 65%;

@@ -27,6 +27,7 @@ import {
   Search,
   CheckCircle,
   Package,
+  Trash2,
 } from 'lucide-react';
 import {
   projetosService,
@@ -154,6 +155,25 @@ export function ProjectDetails() {
     setLastCreatedItem(null);
   };
 
+  const handleDeleteItem = async (itemId: string, itemNome: string) => {
+    const confirmacao = window.confirm(
+      `Tem certeza que deseja excluir o item "${itemNome}"?\n\nEsta ação não pode ser desfeita.`
+    );
+
+    if (!confirmacao) return;
+
+    try {
+      const response = await projetosService.deletarItem(itemId);
+      if (response.success) {
+        // Recarrega os itens
+        await loadProject();
+      }
+    } catch (error) {
+      console.error('Failed to delete item:', error);
+      alert('Erro ao excluir item. Tente novamente.');
+    }
+  };
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -227,17 +247,18 @@ export function ProjectDetails() {
     <div className="space-y-8 w-full">
 
       {/* ── Page Header ─────────────────────────────────────── */}
-      <div className="animate-dash-in" style={{ animationDelay: '0ms' }}>
-        <button
+      <div className="animate-dash-in flex items-center gap-3 mb-3" style={{ animationDelay: '0ms' }}>
+        <Button
           type="button"
+          variant="ghost"
+          size="icon"
           onClick={() => navigate('/')}
-          className="flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground/60 uppercase tracking-[0.2em] mb-3 hover:text-muted-foreground transition-colors"
+          className="shrink-0"
+          aria-label="Voltar"
         >
-          <ArrowLeft className="w-3 h-3" />
-          GovPreços&nbsp;·&nbsp;Minhas cotações
-        </button>
-
-        <div className="flex items-start justify-between gap-4">
+          <ArrowLeft className="w-4 h-4" />
+        </Button>
+        <div className="flex-1 min-w-0 flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             {editingNome ? (
               <Input
@@ -354,6 +375,8 @@ export function ProjectDetails() {
       <ExcelUploadSheet
         open={excelUploadOpen}
         onClose={() => setExcelUploadOpen(false)}
+        projetoId={id}
+        onSuccess={loadProject}
       />
 
       {/* Adicionar item a cotação */}
@@ -527,7 +550,7 @@ export function ProjectDetails() {
                           size="sm"
                           className="h-7 px-2 text-xs text-muted-foreground/60 hover:text-foreground hover:bg-muted/60"
                           onClick={() => navigate(`/projeto/${id}/item/${item.id}`)}
-                          title="Detalhamento"
+                          title="Detalhes do item"
                         >
                           <FileText className="w-3.5 h-3.5" />
                         </Button>
@@ -536,9 +559,18 @@ export function ProjectDetails() {
                           size="sm"
                           className="h-7 px-2 text-xs text-muted-foreground/60 hover:text-primary hover:bg-primary/10"
                           onClick={() => navigate(`/projeto/${id}/item/${item.id}/buscar`)}
-                          title="Buscar fontes"
+                          title="Buscar novos preços..."
                         >
                           <Search className="w-3.5 h-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2 text-xs text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => handleDeleteItem(item.id, item.nome)}
+                          title="Apagar item"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
                         </Button>
                       </div>
                     </TableCell>

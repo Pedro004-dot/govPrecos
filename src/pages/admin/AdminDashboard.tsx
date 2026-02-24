@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Users,
   Building2,
@@ -7,11 +7,13 @@ import {
 } from 'lucide-react';
 import { useAuth, ProtectedRoute } from '@/contexts/AuthContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { adminStatsApi, type AdminStats } from '@/services/admin';
 import { UserManagement } from './UserManagement';
 import { TenantManagement } from './TenantManagement';
+import { AuditLogsTable } from './AuditLogsTable';
 
 // ══════════════════════════════════════════════════════════════════════
 // Admin Dashboard
@@ -101,7 +103,7 @@ export function AdminDashboard() {
           )}
 
           <TabsContent value="logs" className="mt-0">
-            <AuditLogsPlaceholder />
+            <AuditLogsTable />
           </TabsContent>
         </Tabs>
       </div>
@@ -114,25 +116,45 @@ export function AdminDashboard() {
 // ══════════════════════════════════════════════════════════════════════
 
 function AdminStatsCards() {
-  // These would ideally come from an API endpoint
-  const stats = [
+  const [stats, setStats] = useState<AdminStats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    adminStatsApi
+      .get()
+      .then((data) => {
+        if (!cancelled) setStats(data);
+      })
+      .catch(() => {
+        if (!cancelled) setStats(null);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const cards = [
     {
       label: 'Prefeituras ativas',
-      value: '—',
+      value: stats != null ? String(stats.tenantsAtivos) : '—',
       icon: Building2,
       color: 'text-primary',
       bgColor: 'bg-primary/10',
     },
     {
       label: 'Usuários ativos',
-      value: '—',
+      value: stats != null ? String(stats.usuariosAtivos) : '—',
       icon: Users,
       color: 'text-[hsl(38_82%_52%)]',
       bgColor: 'bg-[hsl(38_82%_52%/0.1)]',
     },
     {
       label: 'Projetos criados',
-      value: '—',
+      value: stats != null ? String(stats.projetosTotal) : '—',
       icon: ScrollText,
       color: 'text-[hsl(142_65%_42%)]',
       bgColor: 'bg-[hsl(142_65%_42%/0.1)]',
@@ -141,14 +163,14 @@ function AdminStatsCards() {
 
   return (
     <div className="grid gap-4 sm:grid-cols-3">
-      {stats.map((stat) => (
+      {cards.map((stat) => (
         <Card key={stat.label} className="bg-card border-border/60">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">{stat.label}</p>
                 <p className="font-display text-2xl font-semibold mt-1">
-                  {stat.value}
+                  {loading ? '…' : stat.value}
                 </p>
               </div>
               <div className={cn('p-3 rounded-lg', stat.bgColor)}>
@@ -159,39 +181,6 @@ function AdminStatsCards() {
         </Card>
       ))}
     </div>
-  );
-}
-
-// ══════════════════════════════════════════════════════════════════════
-// Audit Logs Placeholder
-// ══════════════════════════════════════════════════════════════════════
-
-function AuditLogsPlaceholder() {
-  return (
-    <Card className="bg-card border-border/60">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <ScrollText className="w-5 h-5 text-muted-foreground" />
-          Logs de Auditoria
-        </CardTitle>
-        <CardDescription>
-          Histórico de ações realizadas no sistema
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <div className="p-4 rounded-full bg-muted/50 mb-4">
-            <ScrollText className="w-8 h-8 text-muted-foreground" />
-          </div>
-          <p className="text-muted-foreground">
-            Os logs de auditoria estarão disponíveis em breve.
-          </p>
-          <p className="text-sm text-muted-foreground/70 mt-1">
-            Todas as ações de criação, edição e exclusão serão registradas aqui.
-          </p>
-        </div>
-      </CardContent>
-    </Card>
   );
 }
 

@@ -19,6 +19,7 @@ import {
     X
 } from 'lucide-react';
 import { itensService, type ItemBusca, type UploadResponse } from '@/services/items';
+import { projetosService } from '@/services/projetos';
 import { UploadZone } from './UploadZone';
 import { MatchReviewList } from './MatchReviewList';
 
@@ -27,9 +28,11 @@ type Step = 'upload' | 'processing' | 'review';
 interface ExcelUploadSheetProps {
     open: boolean;
     onClose: () => void;
+    projetoId?: string;
+    onSuccess?: () => void;
 }
 
-export function ExcelUploadSheet({ open, onClose }: ExcelUploadSheetProps) {
+export function ExcelUploadSheet({ open, onClose, projetoId, onSuccess }: ExcelUploadSheetProps) {
     const navigate = useNavigate();
 
     const [step, setStep] = useState<Step>('upload');
@@ -37,6 +40,7 @@ export function ExcelUploadSheet({ open, onClose }: ExcelUploadSheetProps) {
     const [matches, setMatches] = useState<UploadResponse | null>(null);
     const [selections, setSelections] = useState<Map<number, ItemBusca>>(new Map());
     const [error, setError] = useState<string | null>(null);
+    const [isCreatingItems, setIsCreatingItems] = useState(false);
 
     const handleFileSelect = async (selectedFile: File) => {
         // Validate file
@@ -124,21 +128,56 @@ export function ExcelUploadSheet({ open, onClose }: ExcelUploadSheetProps) {
         });
     };
 
-    const handleCreateQuotation = () => {
-        const selectedItems = Array.from(selections.values());
+    const handleCreateQuotation = async () => {
+        if (!matches) return;
+
+        const selectedItems = Array.from(selections.entries());
 
         if (selectedItems.length === 0) {
             setError('Selecione pelo menos um item');
             return;
         }
 
-        // Navigate to project editor with selected items
-        navigate('/projetos/novo', {
-            state: { selectedItems }
-        });
+        // Se temos um projetoId, adicionar itens ao projeto existente
+        if (projetoId) {
+            setIsCreatingItems(true);
+            setError(null);
 
-        // Reset and close
-        handleReset();
+            try {
+                // Criar cada item no projeto
+                for (const [linha, itemSelecionado] of selectedItems) {
+                    // Encontrar a linha correspondente nos matches
+                    const linhaData = matches.linhas.find(l => l.linha === linha);
+                    if (!linhaData) continue;
+
+                    // Criar o item usando dados da planilha original
+                    await projetosService.criarItem(projetoId, {
+                        nome: linhaData.descricaoOriginal,
+                        descricao: itemSelecionado.descricao,
+                        quantidade: linhaData.quantidade || itemSelecionado.quantidade || 1,
+                        unidadeMedida: linhaData.unidade || itemSelecionado.unidadeMedida,
+                    });
+                }
+
+                // Sucesso - recarregar e fechar
+                if (onSuccess) {
+                    onSuccess();
+                }
+                handleReset();
+            } catch (err) {
+                console.error('Failed to create items:', err);
+                setError('Erro ao criar itens. Tente novamente.');
+            } finally {
+                setIsCreatingItems(false);
+            }
+        } else {
+            // Comportamento original: navegar para criar nova cotação
+            const legacySelectedItems = Array.from(selections.values());
+            navigate('/projetos/novo', {
+                state: { selectedItems: legacySelectedItems }
+            });
+            handleReset();
+        }
     };
 
     const handleReset = () => {
@@ -259,16 +298,29 @@ export function ExcelUploadSheet({ open, onClose }: ExcelUploadSheetProps) {
                                     variant="outline"
                                     onClick={handleReset}
                                     className="flex-1"
+                                    disabled={isCreatingItems}
                                 >
                                     Cancelar
                                 </Button>
                                 <Button
                                     onClick={handleCreateQuotation}
-                                    disabled={acceptedCount === 0}
+                                    disabled={acceptedCount === 0 || isCreatingItems}
                                     className="flex-1"
                                 >
-                                    <CheckCircle2 className="w-4 h-4 mr-2" />
-                                    Criar Cotação com {acceptedCount} {acceptedCount === 1 ? 'item' : 'itens'}
+                                    {isCreatingItems ? (
+                                        <>
+                                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                            Adicionando itens...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <CheckCircle2 className="w-4 h-4 mr-2" />
+                                            {projetoId
+                                                ? `Adicionar ${acceptedCount} ${acceptedCount === 1 ? 'item' : 'itens'}`
+                                                : `Criar Cotação com ${acceptedCount} ${acceptedCount === 1 ? 'item' : 'itens'}`
+                                            }
+                                        </>
+                                    )}
                                 </Button>
                             </div>
                         </div>

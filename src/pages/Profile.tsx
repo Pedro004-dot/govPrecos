@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -72,6 +72,9 @@ export function Profile() {
         <CardContent className="space-y-4">
           <div className="flex items-center gap-4">
             <Avatar className="h-16 w-16">
+              {tenant?.brasaoUrl && (
+                <AvatarImage src={tenant.brasaoUrl} alt="Brasão da prefeitura" className="object-contain" />
+              )}
               <AvatarFallback className="text-lg">
                 {user?.nome?.charAt(0)?.toUpperCase() || 'U'}
               </AvatarFallback>

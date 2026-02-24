@@ -30,7 +30,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState(() => {
@@ -92,7 +92,7 @@ export function Sidebar() {
   const navigate = useNavigate();
   const isLg = useMediaQuery('(min-width: 1024px)');
   const { theme, toggle: toggleTheme } = useTheme();
-  const { user, isAdmin, isSuperAdmin, logout } = useAuth();
+  const { user, tenant, isAdmin, isSuperAdmin, logout } = useAuth();
 
   // Build nav structure based on user permissions
   // Super admin only sees admin page, regular admins see everything + admin
@@ -154,11 +154,13 @@ export function Sidebar() {
         'flex-shrink-0 border-b border-[hsl(var(--sidebar-dark-border))]',
         collapsed ? 'p-3 flex justify-center items-center' : 'px-4 py-4 flex items-center'
       )}>
-        {collapsed ? (
-          <LogoSymbol className="h-12 w-12" variant="sidebar" />
-        ) : (
-          <LogoFull className="h-16 w-auto" variant="sidebar" />
-        )}
+        <Link to="/" className="inline-flex items-center justify-center">
+          {collapsed ? (
+            <LogoSymbol className="h-12 w-12" variant="sidebar" />
+          ) : (
+            <LogoFull className="h-16 w-auto" variant="sidebar" />
+          )}
+        </Link>
       </div>
 
       {/* Toggle expandir/recolher (apenas em telas grandes) */}
@@ -350,6 +352,9 @@ export function Sidebar() {
               )}
             >
               <Avatar className="h-8 w-8 rounded-full bg-primary text-primary-foreground shrink-0">
+                {tenant?.brasaoUrl && (
+                  <AvatarImage src={tenant.brasaoUrl} alt="Brasão da prefeitura" className="object-contain" />
+                )}
                 <AvatarFallback className="text-xs font-semibold">
                   {user?.nome?.charAt(0)?.toUpperCase() || 'U'}
                 </AvatarFallback>

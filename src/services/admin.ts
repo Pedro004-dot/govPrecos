@@ -77,6 +77,9 @@ export interface UpdateTenantPayload {
 export interface AuditLog {
   id: string;
   usuarioId: string;
+  usuarioNome?: string | null;
+  usuarioEmail?: string | null;
+  tenantNome?: string | null;
   acao: string;
   entidade: string;
   entidadeId: string | null;
@@ -85,6 +88,25 @@ export interface AuditLog {
   ip: string | null;
   userAgent: string | null;
   criadoEm: string;
+}
+
+export interface AuditLogsListParams {
+  tenantId?: string;
+  acao?: string;
+  dataInicio?: string; // ISO date
+  dataFim?: string;
+  ordenarPor?: 'criado_em' | 'acao' | 'entidade' | 'usuario_nome' | 'tenant_nome';
+  ordenarDir?: 'asc' | 'desc';
+  page?: number;
+  limit?: number;
+}
+
+export interface AuditLogsListResponse {
+  success: boolean;
+  logs: AuditLog[];
+  total: number;
+  page: number;
+  limit: number;
 }
 
 // ══════════════════════════════════════════════════════════════════════
@@ -242,4 +264,40 @@ export const tenantsApi = {
   },
 };
 
-export default { users: usersApi, tenants: tenantsApi };
+// ══════════════════════════════════════════════════════════════════════
+// Audit Logs API
+// ══════════════════════════════════════════════════════════════════════
+
+export const auditLogsApi = {
+  list: async (
+    params?: AuditLogsListParams
+  ): Promise<AuditLogsListResponse> => {
+    const response = await api.get<AuditLogsListResponse>('/admin/audit-logs', {
+      params,
+    });
+    return response.data;
+  },
+};
+
+// ══════════════════════════════════════════════════════════════════════
+// Admin Stats API (super_admin only)
+// ══════════════════════════════════════════════════════════════════════
+
+export interface AdminStats {
+  tenantsAtivos: number;
+  usuariosAtivos: number;
+  projetosTotal: number;
+}
+
+export const adminStatsApi = {
+  get: async (): Promise<AdminStats> => {
+    const response = await api.get<{ success: boolean } & AdminStats>('/admin/stats');
+    return {
+      tenantsAtivos: response.data.tenantsAtivos,
+      usuariosAtivos: response.data.usuariosAtivos,
+      projetosTotal: response.data.projetosTotal,
+    };
+  },
+};
+
+export default { users: usersApi, tenants: tenantsApi, auditLogs: auditLogsApi, stats: adminStatsApi };

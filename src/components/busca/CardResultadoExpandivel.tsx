@@ -104,9 +104,20 @@ export function CardResultadoExpandivel({
             <span className="text-muted-foreground">
               {item.quantidade != null ? `${item.quantidade} ${item.unidadeMedida}` : '—'}
             </span>
-            <Badge variant="secondary" className="font-mono text-xs w-9 justify-center">
-              {item.ufSigla ?? '—'}
-            </Badge>
+            <div className="flex flex-col items-end gap-0.5 min-w-[120px]">
+              {item.municipioNome && (
+                <span className="text-xs text-foreground/70 truncate max-w-[120px]">
+                  {item.municipioNome}
+                </span>
+              )}
+              {item.ufSigla ? (
+                <Badge variant="secondary" className="font-mono text-xs w-9 justify-center">
+                  {item.ufSigla}
+                </Badge>
+              ) : (
+                !item.municipioNome && <span className="text-muted-foreground">—</span>
+              )}
+            </div>
             {item.distanciaKm != null ? (
               <span className="text-muted-foreground w-24 text-right font-mono">
                 {item.distanciaKm.toFixed(0)} km

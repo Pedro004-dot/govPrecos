@@ -34,6 +34,7 @@ export interface MeResponse {
       nome: string;
       cnpj: string;
       tipo: string;
+      brasaoUrl?: string;
     };
   };
 }

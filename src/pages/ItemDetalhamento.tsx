@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
+  ArrowLeft,
   ChevronLeft,
   ChevronRight,
   Loader2,
@@ -249,29 +250,22 @@ export function ItemDetalhamento() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-3.5rem)]">
-      {/* Topo: breadcrumb + navegação entre itens */}
+      {/* Topo: seta voltar + título + navegação entre itens */}
       <header className="shrink-0 border-b border-border bg-background px-4 py-3 flex items-center justify-between gap-4">
-        <div>
-          <p className="text-sm text-muted-foreground">
-            <button
-              type="button"
-              onClick={() => navigate(`/projeto/${projetoId}`)}
-              className="hover:text-primary"
-            >
-              Cotações
-            </button>
-            {' / '}
-            <button
-              type="button"
-              onClick={() => navigate(`/projeto/${projetoId}`)}
-              className="hover:text-primary"
-            >
-              {projeto?.nome ?? '…'}
-            </button>
-            {' / '}
-            <span className="text-foreground">{item.nome}</span>
-          </p>
-          <p className="text-xs text-muted-foreground mt-0.5">Detalhamento do item</p>
+        <div className="flex items-center gap-3 min-w-0">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate(`/projeto/${projetoId}`)}
+            className="shrink-0"
+            aria-label="Voltar"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+          <div className="min-w-0">
+            <p className="text-sm font-medium truncate">{item.nome}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Detalhamento do item</p>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <Button

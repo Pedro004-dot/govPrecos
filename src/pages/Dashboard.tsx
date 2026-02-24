@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import {
   Plus,
@@ -16,6 +17,7 @@ export function Dashboard() {
   const [projetos, setProjetos] = useState<Projeto[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { tenant } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -72,25 +74,37 @@ export function Dashboard() {
     <div className="space-y-10 w-full">
 
       {/* ── Page Header ──────────────────────────────────────── */}
-      <div className="animate-dash-in" style={{ animationDelay: '0ms' }}>
-        <p className="font-mono text-[11px] text-muted-foreground/60 uppercase tracking-[0.2em] mb-3">
-          GovPreços&nbsp;·&nbsp;Lei 14.133/2021
-          <span className="ml-3 text-primary/50">{hoje}</span>
-        </p>
-        <h1 className="font-display text-[2.8rem] leading-[1.05] font-normal text-foreground">
-          Minhas cotações
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground max-w-sm leading-relaxed">
-          Pesquisa de preços com rastreabilidade PNCP conforme Lei 14.133/2021.
-        </p>
-        {/* Decorative rule */}
-        <div className="mt-5 flex items-center gap-3">
-          <div className="h-px flex-1 bg-border" />
-          <span className="font-mono text-[9px] text-muted-foreground/30 tracking-widest uppercase">
-            visão geral
-          </span>
-          <div className="h-px w-8 bg-border" />
+      <div className="animate-dash-in flex flex-col md:flex-row md:items-start md:justify-between gap-4" style={{ animationDelay: '0ms' }}>
+        <div>
+          <p className="font-mono text-[11px] text-muted-foreground/60 uppercase tracking-[0.2em] mb-3">
+            GovPreços&nbsp;·&nbsp;Lei 14.133/2021
+            <span className="ml-3 text-primary/50">{hoje}</span>
+          </p>
+          <h1 className="font-display text-[2.8rem] leading-[1.05] font-normal text-foreground">
+            Minhas cotações
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground max-w-sm leading-relaxed">
+            Pesquisa de preços com rastreabilidade PNCP conforme Lei 14.133/2021.
+          </p>
+          {/* Decorative rule */}
+          <div className="mt-5 flex items-center gap-3">
+            <div className="h-px flex-1 bg-border" />
+            <span className="font-mono text-[9px] text-muted-foreground/30 tracking-widest uppercase">
+              visão geral
+            </span>
+            <div className="h-px w-8 bg-border" />
+          </div>
         </div>
+        {/* Brasão da prefeitura — apenas em tablet/desktop */}
+        {tenant?.brasaoUrl && (
+          <div className="hidden md:flex shrink-0 items-center justify-end">
+            <img
+              src={tenant.brasaoUrl}
+              alt="Brasão da prefeitura"
+              className="h-20 w-20 object-contain md:h-24 md:w-24"
+            />
+          </div>
+        )}
       </div>
 
       {/* ── KPI Stats ────────────────────────────────────────── */}
