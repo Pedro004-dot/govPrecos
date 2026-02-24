@@ -165,6 +165,7 @@ export function FiltrosResultados({
       valorMin: null,
       valorMax: null,
       ordenacao: 'relevancia',
+      periodoMeses: 'todos',
     });
   };
 

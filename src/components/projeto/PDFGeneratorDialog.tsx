@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -18,7 +18,6 @@ import {
   FileSpreadsheet,
   FileText,
   Shield,
-  Sparkles,
   RefreshCw,
   Clock,
 } from 'lucide-react';
