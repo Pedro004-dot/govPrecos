@@ -26,6 +26,7 @@ import {
   type ItemFonteDetalhada,
 } from '@/services/projetos';
 import { CardFonteExpandivel } from '@/components/projeto/CardFonteExpandivel';
+import { GraficosComparativos } from '@/components/projeto/GraficosComparativos';
 import { cn } from '@/lib/utils';
 
 type SecaoFonte = 'precos_governamentais' | 'cotacao_direta' | 'graficos';
@@ -623,13 +624,13 @@ export function ItemDetalhamento() {
           )}
 
           {secaoAtiva === 'graficos' && (
-            <Card>
-              <CardContent className="py-12 text-center text-muted-foreground">
-                <BarChart3 className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p className="font-medium">Gráficos comparativos</p>
-                <p className="text-sm mt-1">Em breve: gráfico de comparação de preços entre as fontes deste item.</p>
-              </CardContent>
-            </Card>
+            <GraficosComparativos
+              fontes={fontes}
+              media={stats.media}
+              mediana={mediana}
+              desvioPadrao={stats.desvioPadrao}
+              itemId={itemId}
+            />
           )}
         </main>
       </div>

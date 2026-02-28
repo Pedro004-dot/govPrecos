@@ -12,6 +12,77 @@ interface ApiResponse {
 }
 
 // ============================================
+// Types para Análise de Fornecedores
+// ============================================
+
+export interface ContratoGoverno {
+  // Dados do Órgão
+  codigoOrgao: string;
+  nomeOrgao: string;
+  esfera?: string;
+  poder?: string;
+
+  // Dados da Unidade Gestora
+  codigoUnidadeGestora?: string;
+  nomeUnidadeGestora?: string;
+  nomeUnidadeRealizadoraCompra?: string;
+
+  // Dados do Contrato
+  numeroContrato: string;
+  processo?: string;
+  numeroCompra?: string;
+  codigoModalidadeCompra?: string;
+  nomeModalidadeCompra?: string;
+  dataVigenciaInicial?: string;
+  dataVigenciaFinal?: string;
+  valorGlobal?: number;
+  numeroControlePncpContrato?: string | null;
+  idCompra?: string;
+
+  // Dados do Fornecedor
+  niFornecedor: string;
+  nomeRazaoSocialFornecedor: string;
+
+  // DADOS DO ITEM (principal diferença)
+  tipoItem?: string; // "Material", "Serviço"
+  codigoItem?: number;
+  numeroItem?: string;
+  descricaoIitem?: string; // Nota: API tem typo "descricaoIitem"
+  quantidadeItem?: number;
+  valorUnitarioItem?: number;
+  valorTotalItem?: number;
+
+  [key: string]: any;
+}
+
+export interface DadosCnpj {
+  cnpj: string;
+  razaoSocial: string;
+  nomeFantasia?: string;
+  situacao?: string;
+  porte?: string;
+  naturezaJuridica?: string;
+  dataAbertura?: string;
+  municipio?: string;
+  uf?: string;
+  logradouro?: string;
+  numero?: string;
+  bairro?: string;
+  cep?: string;
+  email?: string;
+  telefone?: string;
+  atividadePrincipal?: { code: string; text: string };
+}
+
+export interface ConsultaContratosParams {
+  cnpj: string;
+  pagina?: number;
+  tamanhoPagina?: number;
+  dataVigenciaInicialMin?: string;
+  dataVigenciaInicialMax?: string;
+}
+
+// ============================================
 // Fornecedores Service
 // ============================================
 
@@ -57,6 +128,44 @@ export const fornecedoresService = {
       `/itens-licitacao/${itemLicitacaoId}/vincular-fornecedor`,
       { tenantId }
     );
+    return response.data;
+  },
+
+  /**
+   * Consulta contratos governamentais por CNPJ.
+   */
+  consultarContratos: async (
+    params: ConsultaContratosParams
+  ): Promise<
+    ApiResponse & {
+      contratos: ContratoGoverno[];
+      totalRegistros: number;
+      totalPaginas: number;
+      paginaAtual: number;
+    }
+  > => {
+    const { tenantId } = getAuthParams();
+    const response = await api.get('/fornecedores/analise/contratos', {
+      params: {
+        tenantId,
+        cnpj: params.cnpj,
+        pagina: params.pagina,
+        tamanhoPagina: params.tamanhoPagina,
+        dataVigenciaInicialMin: params.dataVigenciaInicialMin,
+        dataVigenciaInicialMax: params.dataVigenciaInicialMax,
+      },
+    });
+    return response.data;
+  },
+
+  /**
+   * Busca dados básicos de um CNPJ na ReceitaWS.
+   */
+  buscarDadosCnpj: async (cnpj: string): Promise<ApiResponse & { dadosCnpj: DadosCnpj }> => {
+    const { tenantId } = getAuthParams();
+    const response = await api.get('/fornecedores/analise/dados-cnpj', {
+      params: { tenantId, cnpj },
+    });
     return response.data;
   },
 };

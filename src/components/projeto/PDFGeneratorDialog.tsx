@@ -17,7 +17,6 @@ import {
   FileCheck,
   FileSpreadsheet,
   FileText,
-  Shield,
   RefreshCw,
   Clock,
 } from 'lucide-react';
@@ -220,13 +219,10 @@ export function PDFGeneratorDialog({ projeto, open, onOpenChange }: PDFGenerator
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-[95vw] sm:max-w-7xl max-h-[90vh] overflow-y-auto w-full">
+        <DialogHeader className="border-b border-slate-200/80 pb-4 mb-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg">
-                <Shield className="w-6 h-6 text-white" />
-              </div>
               <div>
                 <DialogTitle className="text-2xl font-bold">Relatório de Conformidade</DialogTitle>
                 <DialogDescription>
@@ -242,182 +238,188 @@ export function PDFGeneratorDialog({ projeto, open, onOpenChange }: PDFGenerator
         </DialogHeader>
 
         <div className="pdf-generator-container" style={{ background: 'transparent', padding: 0, boxShadow: 'none', border: 'none' }}>
-          {/* Existing Report Info */}
-          {hasExistingReport && (
-            <div className="status-message success mb-6">
-              <Clock className="status-icon" />
-              <div className="status-content">
-                <strong className="status-title">Relatório já gerado nesta sessão</strong>
-                <span className="status-time">
-                  Gerado em:{' '}
-                  {currentCached.generatedAt.toLocaleString('pt-BR', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
+          <div className="pdf-main-grid">
+            <div className="pdf-left-column">
+              {/* Report Type Selection */}
+              <div className="report-types-section">
+                <h3 className="section-title">Selecione o tipo de relatório</h3>
+                <div className="report-types-grid">
+                  {reportTypes.map((type) => {
+                    const Icon = type.icon;
+                    const isSelected = tipoRelatorio === type.id;
+
+                    return (
+                      <button
+                        key={type.id}
+                        onClick={() => setTipoRelatorio(type.id)}
+                        disabled={generating}
+                        className={`report-type-card ${isSelected ? 'selected' : ''} ${
+                          generating ? 'disabled' : ''
+                        }`}
+                      >
+                        {type.badge && <span className="report-badge">{type.badge}</span>}
+
+                        <div className="report-icon-wrapper">
+                          <Icon className="report-icon" />
+                        </div>
+
+                        <div className="report-info">
+                          <h4 className="report-title">{type.title}</h4>
+                          <p className="report-description">{type.description}</p>
+                        </div>
+
+                        <ul className="report-features">
+                          {type.features.map((feature, idx) => (
+                            <li key={idx} className="feature-item">
+                              <span className="feature-dot" />
+                              <span className="feature-text">{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+
+                        <div className="selection-indicator">
+                          <div className="indicator-dot" />
+                        </div>
+                      </button>
+                    );
                   })}
-                </span>
-                <p className="text-sm text-slate-600 mt-2">
-                  Você pode baixar ou visualizar o relatório já gerado sem esperar novamente.
-                </p>
+                </div>
               </div>
-            </div>
-          )}
 
-          {/* Report Type Selection */}
-          <div className="report-types-section">
-            <h3 className="section-title">Selecione o tipo de relatório</h3>
-            <div className="report-types-grid">
-              {reportTypes.map((type) => {
-                const Icon = type.icon;
-                const isSelected = tipoRelatorio === type.id;
-
-                return (
-                  <button
-                    key={type.id}
-                    onClick={() => setTipoRelatorio(type.id)}
-                    disabled={generating}
-                    className={`report-type-card ${isSelected ? 'selected' : ''} ${
-                      generating ? 'disabled' : ''
-                    }`}
-                  >
-                    {type.badge && <span className="report-badge">{type.badge}</span>}
-
-                    <div className="report-icon-wrapper">
-                      <Icon className="report-icon" />
-                    </div>
-
-                    <div className="report-info">
-                      <h4 className="report-title">{type.title}</h4>
-                      <p className="report-description">{type.description}</p>
-                    </div>
-
-                    <ul className="report-features">
-                      {type.features.map((feature, idx) => (
-                        <li key={idx} className="feature-item">
-                          <span className="feature-dot" />
-                          <span className="feature-text">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-
-                    <div className="selection-indicator">
-                      <div className="indicator-dot" />
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Error Message */}
-          {error && (
-            <div className="status-message error">
-              <AlertTriangle className="status-icon" />
-              <div className="status-content">
-                <strong className="status-title">Erro ao gerar relatório</strong>
-                <p className="status-description">{error}</p>
-                <span className="status-hint">
-                  Se o erro persistir, verifique se todos os itens possuem fontes válidas.
-                </span>
-              </div>
-            </div>
-          )}
-
-          {/* Action Buttons */}
-          <div className="action-buttons">
-            <Button
-              onClick={handleDownload}
-              disabled={generating}
-              size="lg"
-              className="action-button primary"
-            >
-              {generating ? (
-                <>
-                  <Loader2 className="button-icon animate-spin" />
-                  <div className="button-content">
-                    <span className="button-title">
-                      Gerando {tipoRelatorio === 'xlsx' ? 'planilha' : 'relatório'}...
-                    </span>
-                    <span className="button-subtitle">Processando dados</span>
-                  </div>
-                </>
-              ) : (
-                <>
-                  {tipoRelatorio === 'xlsx' ? (
-                    <FileSpreadsheet className="button-icon" />
-                  ) : (
-                    <Download className="button-icon" />
-                  )}
-                  <div className="button-content">
-                    <span className="button-title">
-                      {hasExistingReport ? 'Baixar' : 'Gerar e Baixar'} {tipoRelatorio === 'xlsx' ? 'Planilha' : 'Relatório'}
-                    </span>
-                    <span className="button-subtitle">
-                      {hasExistingReport ? 'Download imediato' : 'Aguarde a geração'}
-                    </span>
-                  </div>
-                </>
-              )}
-            </Button>
-
-            <Button
-              onClick={handlePreview}
-              disabled={generating || tipoRelatorio === 'xlsx'}
-              variant="outline"
-              size="lg"
-              className="action-button secondary"
-            >
-              <ExternalLink className="button-icon" />
-              <div className="button-content">
-                <span className="button-title">
-                  {hasExistingReport ? 'Visualizar' : 'Gerar e Visualizar'}
-                </span>
-                <span className="button-subtitle">
-                  {tipoRelatorio === 'xlsx' ? 'Não disponível para Excel' : hasExistingReport ? 'Abrir imediatamente' : 'Abrir após gerar'}
-                </span>
-              </div>
-            </Button>
-          </div>
-
-          {/* Regenerate Option */}
-          {hasExistingReport && (
-            <div className="mt-6 p-4 border-2 border-dashed border-slate-200 rounded-lg bg-slate-50">
-              <div className="flex items-start gap-3">
-                <RefreshCw className="w-5 h-5 text-slate-600 mt-0.5 flex-shrink-0" />
-                <div className="flex-1">
-                  <p className="font-semibold text-slate-900 mb-1">
-                    Adicionou mais itens ou deseja gerar um novo relatório?
+              {/* Legal Notice */}
+              <div className="legal-notice">
+                <div className="notice-icon">📋</div>
+                <div className="notice-content">
+                  <strong className="notice-title">Atenção Legal</strong>
+                  <p className="notice-text">
+                    Este relatório deve ser arquivado junto ao processo licitatório para fins de
+                    auditoria. Verifique se todos os dados estão corretos antes de assinar e anexar ao
+                    processo administrativo.
                   </p>
-                  <p className="text-sm text-slate-600 mb-3">
-                    Clique no botão abaixo para gerar uma nova versão atualizada do relatório com os dados mais recentes.
-                  </p>
-                  <Button
-                    onClick={handleForceRegenerate}
-                    variant="outline"
-                    size="sm"
-                    className="gap-2"
-                    disabled={generating}
-                  >
-                    <RefreshCw className="w-4 h-4" />
-                    Gerar Novo Relatório
-                  </Button>
                 </div>
               </div>
             </div>
-          )}
 
-          {/* Legal Notice */}
-          <div className="legal-notice">
-            <div className="notice-icon">📋</div>
-            <div className="notice-content">
-              <strong className="notice-title">Atenção Legal</strong>
-              <p className="notice-text">
-                Este relatório deve ser arquivado junto ao processo licitatório para fins de
-                auditoria. Verifique se todos os dados estão corretos antes de assinar e anexar ao
-                processo administrativo.
-              </p>
+            <div className="pdf-right-column">
+              {/* Existing Report Info */}
+              {hasExistingReport && (
+                <div className="status-message success mb-6">
+                  <Clock className="status-icon" />
+                  <div className="status-content">
+                    <strong className="status-title">Relatório já gerado nesta sessão</strong>
+                    <span className="status-time">
+                      Gerado em:{' '}
+                      {currentCached.generatedAt.toLocaleString('pt-BR', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </span>
+                    <p className="text-sm text-slate-600 mt-2">
+                      Você pode baixar ou visualizar o relatório já gerado sem esperar novamente.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Error Message */}
+              {error && (
+                <div className="status-message error">
+                  <AlertTriangle className="status-icon" />
+                  <div className="status-content">
+                    <strong className="status-title">Erro ao gerar relatório</strong>
+                    <p className="status-description">{error}</p>
+                    <span className="status-hint">
+                      Se o erro persistir, verifique se todos os itens possuem fontes válidas.
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="action-buttons">
+                <Button
+                  onClick={handleDownload}
+                  disabled={generating}
+                  size="lg"
+                  className="action-button primary"
+                >
+                  {generating ? (
+                    <>
+                      <Loader2 className="button-icon animate-spin" />
+                      <div className="button-content">
+                        <span className="button-title">
+                          Gerando {tipoRelatorio === 'xlsx' ? 'planilha' : 'relatório'}...
+                        </span>
+                        <span className="button-subtitle">Processando dados</span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      {tipoRelatorio === 'xlsx' ? (
+                        <FileSpreadsheet className="button-icon" />
+                      ) : (
+                        <Download className="button-icon" />
+                      )}
+                      <div className="button-content">
+                        <span className="button-title">
+                          {hasExistingReport ? 'Baixar' : 'Gerar e Baixar'} {tipoRelatorio === 'xlsx' ? 'Planilha' : 'Relatório'}
+                        </span>
+                        <span className="button-subtitle">
+                          {hasExistingReport ? 'Download imediato' : 'Aguarde a geração'}
+                        </span>
+                      </div>
+                    </>
+                  )}
+                </Button>
+
+                <Button
+                  onClick={handlePreview}
+                  disabled={generating || tipoRelatorio === 'xlsx'}
+                  variant="outline"
+                  size="lg"
+                  className="action-button secondary"
+                >
+                  <ExternalLink className="button-icon" />
+                  <div className="button-content">
+                    <span className="button-title">
+                      {hasExistingReport ? 'Visualizar' : 'Gerar e Visualizar'}
+                    </span>
+                    <span className="button-subtitle">
+                      {tipoRelatorio === 'xlsx' ? 'Não disponível para Excel' : hasExistingReport ? 'Abrir imediatamente' : 'Abrir após gerar'}
+                    </span>
+                  </div>
+                </Button>
+              </div>
+
+              {/* Regenerate Option */}
+              {hasExistingReport && (
+                <div className="mt-6 p-4 border-2 border-dashed border-slate-200 rounded-lg bg-slate-50">
+                  <div className="flex items-start gap-3">
+                    <RefreshCw className="w-5 h-5 text-slate-600 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1">
+                      <p className="font-semibold text-slate-900 mb-1">
+                        Adicionou mais itens ou deseja gerar um novo relatório?
+                      </p>
+                      <p className="text-sm text-slate-600 mb-3">
+                        Clique no botão abaixo para gerar uma nova versão atualizada do relatório com os dados mais recentes.
+                      </p>
+                      <Button
+                        onClick={handleForceRegenerate}
+                        variant="outline"
+                        size="sm"
+                        className="gap-2"
+                        disabled={generating}
+                      >
+                        <RefreshCw className="w-4 h-4" />
+                        Gerar Novo Relatório
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

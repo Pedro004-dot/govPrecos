@@ -112,6 +112,17 @@ export interface ValidationResult {
   infos: ValidationMessage[];
 }
 
+export interface DistanciaFonte {
+  fonteId: string;
+  fornecedorNome: string;
+  municipioOrigem: string | null;
+  ufOrigem: string | null;
+  municipioDestino: string | null;
+  ufDestino: string | null;
+  distanciaKm: number | null;
+  erro?: string;
+}
+
 export interface ProjetoComItens extends Projeto {
   itens?: ProjetoItem[];
 }
@@ -368,6 +379,14 @@ export const projetosService = {
     projetoId: string
   ): Promise<ApiResponse<{ disponivel: boolean; geradoEm?: string }>> => {
     const response = await api.get(`/projetos/${projetoId}/relatorio/status`);
+    return response.data;
+  },
+
+  /**
+   * Get distances from city hall to all sources of an item
+   */
+  buscarDistanciasItem: async (itemId: string): Promise<ApiResponse<{ distancias: DistanciaFonte[] }>> => {
+    const response = await api.get(`/itens/${itemId}/distancias`);
     return response.data;
   },
 };
